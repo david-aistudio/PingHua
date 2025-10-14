@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Play, Calendar, Clock, Star } from 'lucide-react';
 import { api, DonghuaDetail, Episode } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -7,21 +7,37 @@ import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 
 export default function Detail() {
   const { slug } = useParams<{ slug: string }>();
+  const navigate = useNavigate();
   const [donghua, setDonghua] = useState<DonghuaDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [visibleEpisodes, setVisibleEpisodes] = useState(20);
   const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    // Check if slug looks like an episode slug (contains "episode-")
+    if (slug && slug.includes('-episode-')) {
+      // Redirect to episode page
+      navigate(`/episode/${slug}`, { replace: true });
+      return;
+    }
+
     const fetchDetail = async () => {
       if (!slug) return;
 
       try {
         setLoading(true);
         const data = await api.getDetail(slug);
-        setDonghua(data);
+        
+        // Validate if data has required fields
+        if (data && data.title) {
+          setDonghua(data);
+        } else {
+          console.error('Invalid donghua data received');
+          setDonghua(null);
+        }
       } catch (error) {
         console.error('Error fetching detail:', error);
+        setDonghua(null);
       } finally {
         setLoading(false);
       }
@@ -29,7 +45,7 @@ export default function Detail() {
 
     fetchDetail();
     window.scrollTo(0, 0);
-  }, [slug]);
+  }, [slug, navigate]);
 
   // Infinite scroll for episodes
   const loadMoreEpisodes = useCallback(() => {
@@ -134,75 +150,93 @@ export default function Detail() {
 
             {/* Meta Info */}
             <div className="flex flex-wrap gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>{donghua.released}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Clock className="h-4 w-4 text-muted-foreground" />
-                <span>{donghua.duration}</span>
-              </div>
+              {donghua.released && (
+                <div className="flex items-center gap-2">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span>{donghua.released}</span>
+                </div>
+              )}
+              {donghua.duration && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{donghua.duration}</span>
+                </div>
+              )}
               {donghua.rating && (
                 <div className="flex items-center gap-2">
                   <Star className="h-4 w-4 text-yellow-500" />
                   <span>{donghua.rating}</span>
                 </div>
               )}
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                  donghua.status === 'Ongoing'
-                    ? 'bg-primary text-primary-foreground'
-                    : 'bg-secondary text-secondary-foreground'
-                }`}
-              >
-                {donghua.status}
-              </span>
+              {donghua.status && (
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                    donghua.status === 'Ongoing'
+                      ? 'bg-primary text-primary-foreground'
+                      : 'bg-secondary text-secondary-foreground'
+                  }`}
+                >
+                  {donghua.status}
+                </span>
+              )}
             </div>
 
             {/* Genres */}
-            <div className="flex flex-wrap gap-2">
-              {donghua.genres.map((genre, index) => (
-                <Link key={index} to={`/genre/${genre.slug}`}>
-                  <Button variant="outline" size="sm" className="rounded-full">
-                    {genre.name}
-                  </Button>
-                </Link>
-              ))}
-            </div>
+            {donghua.genres && donghua.genres.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {donghua.genres.map((genre, index) => (
+                  <Link key={index} to={`/genre/${genre.slug}`}>
+                    <Button variant="outline" size="sm" className="rounded-full">
+                      {genre.name}
+                    </Button>
+                  </Link>
+                ))}
+              </div>
+            )}
 
             {/* Synopsis */}
-            <div>
-              <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
-              <p className="text-muted-foreground leading-relaxed">{donghua.synopsis}</p>
-            </div>
+            {donghua.synopsis && (
+              <div>
+                <h2 className="text-xl font-semibold mb-3">Synopsis</h2>
+                <p className="text-muted-foreground leading-relaxed">{donghua.synopsis}</p>
+              </div>
+            )}
 
             {/* Additional Info */}
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
-              {donghua.studio && (
-                <div>
-                  <span className="text-muted-foreground">Studio:</span>
-                  <p className="font-medium">{donghua.studio}</p>
-                </div>
-              )}
-              {donghua.network && (
-                <div>
-                  <span className="text-muted-foreground">Network:</span>
-                  <p className="font-medium">{donghua.network}</p>
-                </div>
-              )}
-              <div>
-                <span className="text-muted-foreground">Episodes:</span>
-                <p className="font-medium">{donghua.episodes_count}</p>
+            {(donghua.studio || donghua.network || donghua.episodes_count || donghua.season || donghua.country) && (
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+                {donghua.studio && (
+                  <div>
+                    <span className="text-muted-foreground">Studio:</span>
+                    <p className="font-medium">{donghua.studio}</p>
+                  </div>
+                )}
+                {donghua.network && (
+                  <div>
+                    <span className="text-muted-foreground">Network:</span>
+                    <p className="font-medium">{donghua.network}</p>
+                  </div>
+                )}
+                {donghua.episodes_count && (
+                  <div>
+                    <span className="text-muted-foreground">Episodes:</span>
+                    <p className="font-medium">{donghua.episodes_count}</p>
+                  </div>
+                )}
+                {donghua.season && (
+                  <div>
+                    <span className="text-muted-foreground">Season:</span>
+                    <p className="font-medium">{donghua.season}</p>
+                  </div>
+                )}
+                {donghua.country && (
+                  <div>
+                    <span className="text-muted-foreground">Country:</span>
+                    <p className="font-medium">{donghua.country}</p>
+                  </div>
+                )}
               </div>
-              <div>
-                <span className="text-muted-foreground">Season:</span>
-                <p className="font-medium">{donghua.season}</p>
-              </div>
-              <div>
-                <span className="text-muted-foreground">Country:</span>
-                <p className="font-medium">{donghua.country}</p>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
