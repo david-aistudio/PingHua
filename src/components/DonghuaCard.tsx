@@ -9,10 +9,14 @@ interface DonghuaCardProps {
 export const DonghuaCard = ({ donghua }: DonghuaCardProps) => {
   // Extract slug from URL or use provided slug
   const slug = donghua.slug.replace(/\/$/, '');
-  const detailUrl = `/detail/${slug}`;
+  
+  // Check if this is an episode or a donghua detail
+  // Latest releases have episode URLs, ongoing/completed have detail URLs
+  const isEpisode = donghua.url?.includes('/episode/') || donghua.current_episode;
+  const targetUrl = isEpisode ? `/episode/${slug}` : `/detail/${slug}`;
 
   return (
-    <Link to={detailUrl} className="group block">
+    <Link to={targetUrl} className="group block">
       <div className="relative overflow-hidden rounded-lg bg-card shadow-card hover:shadow-hover transition-all duration-300 animate-fade-in">
         {/* Poster */}
         <div className="relative aspect-[2/3] overflow-hidden">

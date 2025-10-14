@@ -33,7 +33,7 @@ export default function Detail() {
 
   // Infinite scroll for episodes
   const loadMoreEpisodes = useCallback(() => {
-    if (donghua && visibleEpisodes < donghua.episodes_list.length) {
+    if (donghua?.episodes_list && visibleEpisodes < donghua.episodes_list.length) {
       setVisibleEpisodes(prev => Math.min(prev + 20, donghua.episodes_list.length));
     }
   }, [donghua, visibleEpisodes]);
@@ -123,7 +123,7 @@ export default function Detail() {
             </div>
 
             {/* Watch Button */}
-            {donghua.episodes_list.length > 0 && (
+            {donghua.episodes_list && donghua.episodes_list.length > 0 && (
               <Link to={`/episode/${donghua.episodes_list[0].slug}`}>
                 <Button size="lg" className="w-full md:w-auto">
                   <Play className="mr-2 h-5 w-5" />
@@ -207,30 +207,32 @@ export default function Detail() {
         </div>
 
         {/* Episodes List with Infinite Scroll */}
-        <div className="mt-12 mb-8">
-          <h2 className="text-2xl font-bold mb-6">Episodes</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-            {donghua.episodes_list.slice(0, visibleEpisodes).map((episode, index) => (
-              <Link key={index} to={`/episode/${episode.slug}`}>
-                <Button
-                  variant="outline"
-                  className="w-full h-auto py-3 hover:bg-primary hover:text-primary-foreground transition-all"
-                >
-                  Ep {donghua.episodes_list.length - index}
-                </Button>
-              </Link>
-            ))}
-          </div>
+        {donghua.episodes_list && donghua.episodes_list.length > 0 && (
+          <div className="mt-12 mb-8">
+            <h2 className="text-2xl font-bold mb-6">Episodes</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {donghua.episodes_list.slice(0, visibleEpisodes).map((episode, index) => (
+                <Link key={index} to={`/episode/${episode.slug}`}>
+                  <Button
+                    variant="outline"
+                    className="w-full h-auto py-3 hover:bg-primary hover:text-primary-foreground transition-all"
+                  >
+                    Ep {donghua.episodes_list.length - index}
+                  </Button>
+                </Link>
+              ))}
+            </div>
 
-          {/* Infinite scroll trigger */}
-          <div ref={observerTarget} className="mt-4">
-            {visibleEpisodes < donghua.episodes_list.length && (
-              <div className="text-center text-sm text-muted-foreground">
-                Loading more episodes...
-              </div>
-            )}
+            {/* Infinite scroll trigger */}
+            <div ref={observerTarget} className="mt-4">
+              {visibleEpisodes < donghua.episodes_list.length && (
+                <div className="text-center text-sm text-muted-foreground">
+                  Loading more episodes...
+                </div>
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
