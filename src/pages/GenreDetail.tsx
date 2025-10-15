@@ -18,7 +18,8 @@ export default function GenreDetail() {
     try {
       setLoading(true);
       const data = await api.getByGenre(slug, pageNum);
-      const newDonghua = data.genre_donghua || [];
+      // API returns 'data' array, not 'genre_donghua'
+      const newDonghua = data.data || data.genre_donghua || [];
       
       if (newDonghua.length === 0) {
         setHasMore(false);

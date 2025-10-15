@@ -11,8 +11,8 @@ export const DonghuaCard = ({ donghua }: DonghuaCardProps) => {
   const slug = donghua.slug.replace(/\/$/, '');
   
   // Check if this is an episode or a donghua detail
-  // Latest releases have episode URLs, ongoing/completed have detail URLs
-  const isEpisode = donghua.url?.includes('/episode/') || donghua.current_episode;
+  // Latest releases have 'current_episode' field, indicating they are episodes
+  const isEpisode = !!donghua.current_episode;
   const targetUrl = isEpisode ? `/episode/${slug}` : `/detail/${slug}`;
 
   return (

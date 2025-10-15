@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
-import { api, EpisodeDetail } from '@/lib/api';
+import { api, EpisodeDetail, Episode as EpisodeType } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
@@ -11,6 +11,8 @@ export default function Episode() {
   const [episode, setEpisode] = useState<EpisodeDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedServer, setSelectedServer] = useState('');
+  const [visibleEpisodes, setVisibleEpisodes] = useState(20);
+  const observerTarget = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchEpisode = async () => {
@@ -31,6 +33,35 @@ export default function Episode() {
 
     fetchEpisode();
   }, [slug]);
+
+  // Infinite scroll for episodes
+  const loadMoreEpisodes = useCallback(() => {
+    if (episode?.episodes_list && visibleEpisodes < episode.episodes_list.length) {
+      setVisibleEpisodes(prev => Math.min(prev + 20, episode.episodes_list!.length));
+    }
+  }, [episode, visibleEpisodes]);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          loadMoreEpisodes();
+        }
+      },
+      { threshold: 0.1 }
+    );
+
+    const currentTarget = observerTarget.current;
+    if (currentTarget) {
+      observer.observe(currentTarget);
+    }
+
+    return () => {
+      if (currentTarget) {
+        observer.unobserve(currentTarget);
+      }
+    };
+  }, [loadMoreEpisodes]);
 
   if (loading) {
     return (
@@ -56,37 +87,26 @@ export default function Episode() {
     );
   }
 
-  // Extract donghua slug from episode slug for back button
-  const donghuaSlug = slug?.replace(/-episode-\d+.*/, '');
+  // Get navigation data - prioritize navigation object
+  const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
+  const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
+  const donghuaSlug = episode.donghua_details?.slug || 
+                      episode.navigation?.all_episodes?.slug || 
+                      slug?.replace(/-episode-\d+.*/, '');
 
   return (
     <div className="min-h-screen pb-8">
       <div className="container mx-auto px-4 py-6">
         {/* Header */}
-        <div className="mb-4 flex items-center justify-between flex-wrap gap-4">
-          <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-1">{episode.episode}</h1>
-            <Link to={`/detail/${donghuaSlug}`} className="text-sm text-primary hover:underline">
-              Back to Detail
-            </Link>
-          </div>
-
-          {/* Server Selector */}
-          {episode.streaming.servers.length > 1 && (
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-muted-foreground">Server:</span>
-              <Select value={selectedServer} onValueChange={setSelectedServer}>
-                <SelectTrigger className="w-[180px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {episode.streaming.servers.map((server, index) => (
-                    <SelectItem key={index} value={server.url}>
-                      {server.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+        <div className="mb-4">
+          <h1 className="text-2xl md:text-3xl font-bold mb-1">{episode.episode}</h1>
+          {episode.donghua_details && (
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Link to={`/detail/${donghuaSlug}`} className="hover:text-primary transition-colors">
+                {episode.donghua_details.title}
+              </Link>
+              <span>•</span>
+              <span>{episode.donghua_details.released}</span>
             </div>
           )}
         </div>
@@ -103,15 +123,16 @@ export default function Episode() {
           </div>
         </div>
 
-        {/* Navigation */}
-        <div className="flex flex-wrap gap-3 justify-center md:justify-between">
-          {episode.prev_episode ? (
+        {/* Navigation Buttons */}
+        <div className="flex flex-wrap gap-3 justify-between mb-6">
+          {prevEpisode ? (
             <Button
-              onClick={() => navigate(`/episode/${episode.prev_episode?.slug}`)}
+              onClick={() => navigate(`/episode/${prevEpisode.slug}`)}
+              variant="outline"
               className="flex-1 md:flex-none"
             >
               <ChevronLeft className="mr-2 h-4 w-4" />
-              Previous Episode
+              Previous
             </Button>
           ) : (
             <div className="flex-1 md:flex-none" />
@@ -120,22 +141,73 @@ export default function Episode() {
           <Link to={`/detail/${donghuaSlug}`}>
             <Button variant="outline">
               <Home className="mr-2 h-4 w-4" />
-              Episode List
+              All Episodes
             </Button>
           </Link>
 
-          {episode.next_episode ? (
+          {nextEpisode ? (
             <Button
-              onClick={() => navigate(`/episode/${episode.next_episode?.slug}`)}
+              onClick={() => navigate(`/episode/${nextEpisode.slug}`)}
+              variant="outline"
               className="flex-1 md:flex-none"
             >
-              Next Episode
+              Next
               <ChevronRight className="ml-2 h-4 w-4" />
             </Button>
           ) : (
             <div className="flex-1 md:flex-none" />
           )}
         </div>
+
+        {/* Server Selector */}
+        {episode.streaming.servers.length > 1 && (
+          <div className="flex items-center justify-center gap-3 mb-6 p-4 bg-card rounded-lg border">
+            <span className="text-sm font-medium">Select Server:</span>
+            <Select value={selectedServer} onValueChange={setSelectedServer}>
+              <SelectTrigger className="w-[200px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {episode.streaming.servers.map((server, index) => (
+                  <SelectItem key={index} value={server.url}>
+                    {server.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+
+        {/* Episodes List with Infinite Scroll */}
+        {episode.episodes_list && episode.episodes_list.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-xl font-bold mb-4">All Episodes</h2>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+              {episode.episodes_list.slice(0, visibleEpisodes).map((ep, index) => {
+                const isCurrentEpisode = ep.slug === slug;
+                return (
+                  <Link key={index} to={`/episode/${ep.slug}`}>
+                    <Button
+                      variant={isCurrentEpisode ? "default" : "outline"}
+                      className="w-full h-auto py-3 transition-all"
+                    >
+                      Ep {episode.episodes_list!.length - index}
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
+
+            {/* Infinite scroll trigger */}
+            <div ref={observerTarget} className="mt-4">
+              {visibleEpisodes < episode.episodes_list.length && (
+                <div className="text-center text-sm text-muted-foreground">
+                  Loading more episodes...
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

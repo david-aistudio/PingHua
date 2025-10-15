@@ -16,7 +16,8 @@ export default function ByYear() {
       try {
         setLoading(true);
         const data = await api.getByYear(selectedYear);
-        setDonghua(data.season_donghua || []);
+        // API returns 'data' array, not 'season_donghua'
+        setDonghua(data.data || data.season_donghua || []);
       } catch (error) {
         console.error('Error fetching by year:', error);
       } finally {

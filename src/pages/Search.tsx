@@ -16,7 +16,8 @@ export default function Search() {
       try {
         setLoading(true);
         const data = await api.search(keyword, 1);
-        setResults(data.search_results || []);
+        // API returns 'data' array, not 'search_results'
+        setResults(data.data || data.search_results || []);
       } catch (error) {
         console.error('Error searching:', error);
       } finally {

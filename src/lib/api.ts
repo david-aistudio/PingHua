@@ -8,6 +8,13 @@ export interface DonghuaCard {
   url: string;
   type?: string;
   current_episode?: string;
+  sub?: string;
+  episodes?: string;
+  alternative?: string;
+  rating?: string | null;
+  studio?: string;
+  description?: string;
+  genres?: Genre[];
 }
 
 export interface Genre {
@@ -55,6 +62,32 @@ export interface EpisodeDetail {
     main_url: StreamingServer;
     servers: StreamingServer[];
   };
+  donghua_details?: {
+    title: string;
+    slug: string;
+    url: string;
+    poster: string;
+    type: string;
+    released: string;
+    uploader: string;
+  };
+  navigation?: {
+    all_episodes?: {
+      slug: string;
+      url: string;
+    };
+    previous_episode?: {
+      episode: string;
+      slug: string;
+      url: string;
+    } | null;
+    next_episode?: {
+      episode: string;
+      slug: string;
+      url: string;
+    } | null;
+  };
+  episodes_list?: Episode[];
   prev_episode?: {
     title: string;
     slug: string;
