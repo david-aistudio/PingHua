@@ -123,60 +123,73 @@ export default function Episode() {
           </div>
         </div>
 
-        {/* Navigation Buttons */}
-        <div className="flex flex-wrap gap-3 justify-between mb-6">
-          {prevEpisode ? (
-            <Button
-              onClick={() => navigate(`/episode/${prevEpisode.slug}`)}
-              variant="outline"
-              className="flex-1 md:flex-none"
-            >
-              <ChevronLeft className="mr-2 h-4 w-4" />
-              Previous
-            </Button>
-          ) : (
-            <div className="flex-1 md:flex-none" />
+        {/* Controls Section */}
+        <div className="space-y-3 mb-6">
+          {/* Server Selector Bar */}
+          {episode.streaming.servers.length > 0 && (
+            <div className="bg-card/50 backdrop-blur-sm border rounded-lg px-4 py-2.5">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Select Video Server</span>
+                <Select value={selectedServer} onValueChange={setSelectedServer}>
+                  <SelectTrigger className="h-8 w-[140px] text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {episode.streaming.servers.map((server, index) => (
+                      <SelectItem key={index} value={server.url}>
+                        {server.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           )}
 
-          <Link to={`/detail/${donghuaSlug}`}>
-            <Button variant="outline">
-              <Home className="mr-2 h-4 w-4" />
-              All Episodes
-            </Button>
-          </Link>
+          {/* Navigation Buttons */}
+          <div className="flex items-center gap-2">
+            {prevEpisode ? (
+              <Button
+                onClick={() => navigate(`/episode/${prevEpisode.slug}`)}
+                variant="outline"
+                size="sm"
+                className="h-9 px-3"
+              >
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Prev</span>
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" className="h-9 px-3" disabled>
+                <ChevronLeft className="h-4 w-4 mr-1" />
+                <span className="hidden sm:inline">Prev</span>
+              </Button>
+            )}
 
-          {nextEpisode ? (
-            <Button
-              onClick={() => navigate(`/episode/${nextEpisode.slug}`)}
-              variant="outline"
-              className="flex-1 md:flex-none"
-            >
-              Next
-              <ChevronRight className="ml-2 h-4 w-4" />
-            </Button>
-          ) : (
-            <div className="flex-1 md:flex-none" />
-          )}
-        </div>
+            <Link to={`/detail/${donghuaSlug}`} className="flex-1">
+              <Button variant="default" className="w-full h-9">
+                <Home className="h-4 w-4 mr-2" />
+                All Episodes
+              </Button>
+            </Link>
 
-        {/* Server Selector */}
-        {episode.streaming.servers.length > 1 && (
-          <div className="flex items-center justify-center gap-3 mb-6 p-4 bg-card rounded-lg border">
-            <span className="text-sm font-medium">Select Server:</span>
-            <Select value={selectedServer} onValueChange={setSelectedServer}>
-              <SelectTrigger className="w-[200px]">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {episode.streaming.servers.map((server, index) => (
-                  <SelectItem key={index} value={server.url}>
-                    {server.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            {nextEpisode ? (
+              <Button
+                onClick={() => navigate(`/episode/${nextEpisode.slug}`)}
+                variant="outline"
+                size="sm"
+                className="h-9 px-3"
+              >
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            ) : (
+              <Button variant="outline" size="sm" className="h-9 px-3" disabled>
+                <span className="hidden sm:inline">Next</span>
+                <ChevronRight className="h-4 w-4 ml-1" />
+              </Button>
+            )}
           </div>
-        )}
+        </div>
 
         {/* Episodes List with Infinite Scroll */}
         {episode.episodes_list && episode.episodes_list.length > 0 && (
