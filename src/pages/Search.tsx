@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import { Search as SearchIcon } from 'lucide-react';
 import { api, DonghuaCard as DonghuaCardType } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid } from '@/components/LoadingSkeleton';
@@ -31,8 +32,13 @@ export default function Search() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Search Results</h1>
-        <p className="text-muted-foreground mb-8">
+        <div className="flex items-center gap-3 mb-3">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary/10">
+            <SearchIcon className="w-6 h-6 text-primary" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold">Search Results</h1>
+        </div>
+        <p className="text-muted-foreground mb-8 ml-15">
           Showing results for: <span className="font-semibold text-foreground">"{keyword}"</span>
         </p>
 

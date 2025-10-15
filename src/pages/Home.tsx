@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Flame, Tv, CheckCircle2 } from 'lucide-react';
 import { api, DonghuaCard as DonghuaCardType } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid } from '@/components/LoadingSkeleton';
@@ -53,7 +53,12 @@ export default function Home() {
         {/* Latest Release */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold">🔥 Latest Release</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-orange-500/10">
+                <Flame className="w-5 h-5 text-orange-500" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold">Latest Release</h2>
+            </div>
           </div>
           {loading ? (
             <LoadingGrid count={12} />
@@ -69,7 +74,12 @@ export default function Home() {
         {/* Ongoing */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold">📺 Ongoing Donghua</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-blue-500/10">
+                <Tv className="w-5 h-5 text-blue-500" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold">Ongoing Donghua</h2>
+            </div>
             <Link to="/ongoing">
               <Button variant="ghost" size="sm">
                 View All <ChevronRight className="ml-1 h-4 w-4" />
@@ -90,7 +100,12 @@ export default function Home() {
         {/* Completed */}
         <section>
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl md:text-3xl font-bold">✅ Completed Donghua</h2>
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-green-500/10">
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
+              </div>
+              <h2 className="text-2xl md:text-3xl font-bold">Completed Donghua</h2>
+            </div>
             <Link to="/completed">
               <Button variant="ghost" size="sm">
                 View All <ChevronRight className="ml-1 h-4 w-4" />

@@ -1,4 +1,5 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
+import { Tv } from 'lucide-react';
 import { api, DonghuaCard as DonghuaCardType } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid, LoadingSkeleton } from '@/components/LoadingSkeleton';
@@ -65,7 +66,12 @@ export default function Ongoing() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">📺 Ongoing Donghua</h1>
+        <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-500/10">
+            <Tv className="w-6 h-6 text-blue-500" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold">Ongoing Donghua</h1>
+        </div>
 
         {donghua.length === 0 && loading ? (
           <LoadingGrid count={24} />

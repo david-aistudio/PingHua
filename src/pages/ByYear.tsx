@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Calendar } from 'lucide-react';
 import { api, DonghuaCard as DonghuaCardType } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid } from '@/components/LoadingSkeleton';
@@ -31,7 +32,12 @@ export default function ByYear() {
   return (
     <div className="min-h-screen">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-8">📅 Donghua by Year</h1>
+        <div className="flex items-center gap-3 mb-8">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-purple-500/10">
+            <Calendar className="w-6 h-6 text-purple-500" />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-bold">Donghua by Year</h1>
+        </div>
 
         {/* Year selector */}
         <div className="flex flex-wrap gap-3 mb-8">
