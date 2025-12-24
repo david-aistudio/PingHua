@@ -56,10 +56,10 @@ export default function Episode() {
   }
 
   // Filter servers for clean sources only (SAFE TO DO HERE)
-  const allServers = episode.streaming.servers;
+  const allServers = episode.streaming.servers || [];
   const cleanServers = allServers.filter(s => 
-    s.name.toLowerCase().includes('ok.ru') || 
-    s.name.toLowerCase().includes('rumble')
+    s.name && (s.name.toLowerCase().includes('ok.ru') || 
+    s.name.toLowerCase().includes('rumble'))
   );
 
   // Use clean servers if available, otherwise fallback to all (Emergency Mode)
@@ -70,7 +70,14 @@ export default function Episode() {
       // Smart Select: Pick the first available from our filtered display list
       const bestServer = displayServers[0]?.url;
       
-      setSelectedServer(bestServer || episode.streaming.main_url.url);
+      // Only update if different to avoid loop
+      setSelectedServer(prev => {
+        if (prev !== bestServer && bestServer) {
+            return bestServer;
+        }
+        return prev || episode.streaming.main_url.url;
+      });
+      
       window.scrollTo(0, 0);
 
       // Save to history
@@ -84,7 +91,7 @@ export default function Episode() {
         });
       }
     }
-  }, [episode, slug]); // displayServers is derived from episode, so it's stable per episode change
+  }, [episode, slug, displayServers]); // Added displayServers to dependencies
 
   // Get navigation data - prioritize navigation object
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
