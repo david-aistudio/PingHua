@@ -55,45 +55,52 @@ export default function Episode() {
     );
   }
 
-  // Filter servers for clean sources only (SAFE TO DO HERE)
-  const allServers = episode.streaming.servers || [];
-  const cleanServers = allServers.filter(s => 
-    s.name && (s.name.toLowerCase().includes('ok.ru') || 
-    s.name.toLowerCase().includes('rumble'))
-  );
-
-  // Use clean servers if available, otherwise fallback to all (Emergency Mode)
-  const displayServers = cleanServers.length > 0 ? cleanServers : allServers;
+  // DEBUG MODE: Use all servers directly to test if filtering is the issue
+  const allServers = episode.streaming?.servers || [];
+  const displayServers = allServers; 
 
   useEffect(() => {
     if (episode && displayServers.length > 0) {
-      // Smart Select: Pick the first available from our filtered display list
+      // DEBUG: Default to first server available
       const bestServer = displayServers[0]?.url;
       
-      // Only update if different to avoid loop
       setSelectedServer(prev => {
         if (prev !== bestServer && bestServer) {
             return bestServer;
         }
-        return prev || episode.streaming.main_url.url;
+        return prev || episode.streaming?.main_url?.url || '';
       });
       
       window.scrollTo(0, 0);
-
-      // Save to history
+      
+      // Save history logic...
       if (episode.donghua_details && slug) {
-        history.add({
-          slug: episode.donghua_details.slug,
-          title: episode.donghua_details.title,
-          episode: episode.episode,
-          episodeSlug: slug,
-          poster: episode.donghua_details.poster,
-        });
+          history.add({
+            slug: episode.donghua_details.slug,
+            title: episode.donghua_details.title,
+            episode: episode.episode,
+            episodeSlug: slug,
+            poster: episode.donghua_details.poster,
+          });
       }
     }
-  }, [episode, slug, displayServers]); // Added displayServers to dependencies
+  }, [episode, slug, displayServers]);
 
-  // Get navigation data - prioritize navigation object
+  // CRITICAL CHECK: If streaming data is missing
+  if (episode && (!episode.streaming || !episode.streaming.servers)) {
+      return (
+          <div className="min-h-screen flex flex-col items-center justify-center p-4 text-center">
+              <h1 className="text-2xl font-bold text-red-500 mb-4">API ERROR</h1>
+              <p className="mb-4">No streaming data found for this episode.</p>
+              <pre className="bg-gray-900 p-4 rounded text-left text-xs w-full max-w-lg overflow-auto">
+                  {JSON.stringify(episode, null, 2)}
+              </pre>
+              <Link to="/"><Button className="mt-4">Back to Home</Button></Link>
+          </div>
+      )
+  }
+
+  // Get navigation data...
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
   const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
   const donghuaSlug = episode.donghua_details?.slug || 
@@ -123,6 +130,11 @@ export default function Episode() {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 sandbox="allow-scripts allow-same-origin allow-presentation"
               />
+            ) : displayServers.length === 0 ? (
+              <div className="text-white text-center">
+                <p className="text-lg font-semibold mb-2">No Servers Available</p>
+                <p className="text-sm text-gray-400">Please try again later or select another episode.</p>
+              </div>
             ) : (
               <div className="text-white text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
