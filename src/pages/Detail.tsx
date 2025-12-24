@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Play, Calendar, Clock, Star } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { api, DonghuaDetail } from '@/lib/api';
 import { Button } from '@/components/ui/button';
@@ -106,6 +107,16 @@ export default function Detail() {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>{`Nonton ${donghua.title} Subtitle Indonesia - PingHua`}</title>
+        <meta name="description" content={`Nonton Donghua ${donghua.title} Subtitle Indonesia. ${donghua.synopsis?.slice(0, 150)}...`} />
+        <meta property="og:title" content={`Nonton ${donghua.title} Subtitle Indonesia - PingHua`} />
+        <meta property="og:description" content={`Streaming Donghua ${donghua.title} gratis dengan kualitas HD.`} />
+        <meta property="og:image" content={donghua.poster} />
+        <meta property="og:type" content="video.tv_show" />
+        <meta property="og:url" content={`https://pinghua.qzz.io/detail/${slug}`} />
+      </Helmet>
+
       {/* Hero Section */}
       <div className="relative w-full h-[400px] md:h-[500px]">
         <img

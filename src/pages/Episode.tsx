@@ -2,6 +2,7 @@ import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { history } from '@/lib/history';
@@ -110,6 +111,13 @@ export default function Episode() {
 
   return (
     <div className="min-h-screen pb-24 bg-background">
+      <Helmet>
+        <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
+        <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
+        <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
+        <meta property="og:image" content={episode.donghua_details?.poster} />
+        <meta property="og:type" content="video.episode" />
+      </Helmet>
       
       {/* THEATER MODE PLAYER SECTION */}
       <div className="w-full bg-black">

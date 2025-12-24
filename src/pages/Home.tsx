@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Flame, Tv, CheckCircle2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
@@ -56,12 +57,21 @@ export default function Home() {
 
   return (
     <div className="min-h-screen pb-24">
+      <Helmet>
+        <title>PingHua - Nonton Donghua Sub Indo Gratis Terbaru</title>
+        <meta name="description" content="PingHua adalah platform streaming Donghua (animasi China) subtitle Indonesia terlengkap dan terupdate. Nonton gratis kualitas HD tanpa iklan mengganggu." />
+        <meta property="og:title" content="PingHua - Nonton Donghua Sub Indo Gratis Terbaru" />
+        <meta property="og:description" content="Streaming Donghua subtitle Indonesia terbaru dan terlengkap hanya di PingHua." />
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content="https://pinghua.qzz.io/" />
+      </Helmet>
+
       {/* Full-width Hero Carousel */}
       <div className="w-full">
         {!loadingHome && carouselItems.length > 0 ? (
           <HeroCarousel items={carouselItems} />
         ) : (
-          <div className="w-full aspect-[16/9] md:aspect-[21/9] lg:h-[70vh] bg-card animate-pulse" />
+          <div className="w-full aspect-[16/9] md:aspect-[21/9] lg:h-[60vh] bg-card animate-pulse" />
         )}
       </div>
 
