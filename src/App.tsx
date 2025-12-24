@@ -22,22 +22,7 @@ const queryClient = new QueryClient();
 const App = () => {
   // Auto dark mode based on system preference
   useEffect(() => {
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-    const handleChange = (e: MediaQueryListEvent) => {
-      if (e.matches) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
-    };
-
-    // Set initial theme
-    if (mediaQuery.matches) {
-      document.documentElement.classList.add('dark');
-    }
-
-    mediaQuery.addEventListener('change', handleChange);
-    return () => mediaQuery.removeEventListener('change', handleChange);
+    document.documentElement.classList.add('dark');
   }, []);
 
   return (
@@ -47,8 +32,7 @@ const App = () => {
           <Toaster />
           <Sonner />
           <BrowserRouter>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
+            <div className="flex flex-col min-h-screen bg-background text-foreground">
               <main className="flex-1">
                 <Routes>
                   <Route path="/" element={<Home />} />
@@ -61,10 +45,10 @@ const App = () => {
                   <Route path="/by-year" element={<ByYear />} />
                   <Route path="/detail/:slug" element={<Detail />} />
                   <Route path="/episode/:slug" element={<Episode />} />
-                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </main>
+              <Navbar />
             </div>
           </BrowserRouter>
         </TooltipProvider>

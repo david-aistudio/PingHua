@@ -47,13 +47,15 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
           >
             {/* Image Container */}
             <div className="relative w-full h-full">
-                              <img
-                                src={item.poster}
-                                alt={item.title}
-                                className={`w-full h-full object-cover transition-transform duration-[30000ms] ease-linear ${
-                                    isActive ? 'scale-110' : 'scale-100'
-                                }`}
-                              />              {/* Cinematic Gradients */}
+              <img
+                src={item.poster}
+                alt={item.title}
+                className={`w-full h-full object-cover transition-transform ease-linear ${
+                    isActive ? 'scale-110' : 'scale-100'
+                }`}
+                style={{ transitionDuration: '30000ms' }}
+              />
+              {/* Cinematic Gradients */}
               <div className="absolute inset-0 bg-gradient-to-t from-background via-background/20 to-transparent" />
               <div className="absolute inset-0 bg-gradient-to-r from-background via-transparent to-transparent opacity-80" />
               
