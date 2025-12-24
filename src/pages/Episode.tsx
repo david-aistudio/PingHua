@@ -33,7 +33,29 @@ export default function Episode() {
 
   useEffect(() => {
     if (episode) {
-      setSelectedServer(episode.streaming.main_url.url);
+      // Smart Server Selection Strategy
+      // Priority: OK.ru > Drive/Google > Bstation > YourUpload > Default
+      const servers = episode.streaming.servers;
+      let bestServer = servers[0]?.url; // Default to first server
+
+      if (servers.length > 0) {
+        const okRu = servers.find(s => s.name.toLowerCase().includes('ok.ru'));
+        const drive = servers.find(s => s.name.toLowerCase().includes('drive') || s.name.toLowerCase().includes('google'));
+        const bstation = servers.find(s => s.name.toLowerCase().includes('bstation') || s.name.toLowerCase().includes('bilibili'));
+        const yourupload = servers.find(s => s.name.toLowerCase().includes('yourupload'));
+
+        if (okRu) {
+          bestServer = okRu.url;
+        } else if (drive) {
+          bestServer = drive.url;
+        } else if (bstation) {
+          bestServer = bstation.url;
+        } else if (yourupload) {
+          bestServer = yourupload.url;
+        }
+      }
+
+      setSelectedServer(bestServer || episode.streaming.main_url.url);
       window.scrollTo(0, 0);
 
       // Save to history
