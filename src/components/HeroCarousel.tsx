@@ -27,9 +27,13 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
       
       {/* Branding Logo Overlay */}
       <div className="absolute top-6 left-6 md:top-8 md:left-12 z-50">
-        <h1 className="text-2xl md:text-3xl font-extrabold text-black tracking-tighter drop-shadow-sm">
-          PingHua
-        </h1>
+        <Link to="/">
+          <img 
+            src="/logo.png" 
+            alt="PingHua Logo" 
+            className="h-20 md:h-40 w-auto object-contain hover:scale-105 transition-transform duration-300 drop-shadow-[0_0_15px_rgba(0,0,0,0.5)]"
+          />
+        </Link>
       </div>
 
       {/* Stacked Slides for Hybrid Transition */}
