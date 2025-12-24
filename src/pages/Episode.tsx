@@ -31,30 +31,22 @@ export default function Episode() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Filter servers for clean sources only
+  const allServers = episode.streaming.servers;
+  const cleanServers = allServers.filter(s => 
+    s.name.toLowerCase().includes('ok.ru') || 
+    s.name.toLowerCase().includes('rumble')
+  );
+
+  // Use clean servers if available, otherwise fallback to all (Emergency Mode)
+  const displayServers = cleanServers.length > 0 ? cleanServers : allServers;
+
   useEffect(() => {
     if (episode) {
-      // Smart Server Selection Strategy
-      // Priority: OK.ru > Drive/Google > Bstation > YourUpload > Default
-      const servers = episode.streaming.servers;
-      let bestServer = servers[0]?.url; // Default to first server
-
-      if (servers.length > 0) {
-        const okRu = servers.find(s => s.name.toLowerCase().includes('ok.ru'));
-        const drive = servers.find(s => s.name.toLowerCase().includes('drive') || s.name.toLowerCase().includes('google'));
-        const bstation = servers.find(s => s.name.toLowerCase().includes('bstation') || s.name.toLowerCase().includes('bilibili'));
-        const yourupload = servers.find(s => s.name.toLowerCase().includes('yourupload'));
-
-        if (okRu) {
-          bestServer = okRu.url;
-        } else if (drive) {
-          bestServer = drive.url;
-        } else if (bstation) {
-          bestServer = bstation.url;
-        } else if (yourupload) {
-          bestServer = yourupload.url;
-        }
-      }
-
+      // Smart Select: Pick the first available from our filtered display list
+      // Since cleanServers is already filtered for priority, the first one is the best one.
+      const bestServer = displayServers[0]?.url;
+      
       setSelectedServer(bestServer || episode.streaming.main_url.url);
       window.scrollTo(0, 0);
 
@@ -69,7 +61,7 @@ export default function Episode() {
         });
       }
     }
-  }, [episode, slug]);
+  }, [episode, slug]); // Note: displayServers is derived from episode, so we don't need it in deps strictly if we trust episode changes triggers re-render
 
   // Infinite scroll for episodes
   const loadMoreEpisodes = useCallback(() => {
@@ -179,7 +171,7 @@ export default function Episode() {
             {/* Server & Nav Controls */}
             <div className="flex flex-col gap-3 w-full md:w-auto">
                 {/* Server Selector */}
-                {episode.streaming.servers.length > 0 && (
+                {displayServers.length > 0 && (
                     <div className="flex items-center justify-between md:justify-end gap-3 bg-secondary/30 p-2 rounded-lg">
                         <span className="text-xs font-medium text-muted-foreground whitespace-nowrap px-2">Server</span>
                         <Select value={selectedServer} onValueChange={setSelectedServer}>
@@ -187,7 +179,7 @@ export default function Episode() {
                                 <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                                {episode.streaming.servers.map((server, index) => (
+                                {displayServers.map((server, index) => (
                                 <SelectItem key={index} value={server.url}>
                                     {server.name}
                                 </SelectItem>
