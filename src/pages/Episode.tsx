@@ -109,9 +109,15 @@ export default function Episode() {
               <SelectValue placeholder="Pilih Server" />
             </SelectTrigger>
             <SelectContent>
-              {finalDropdownServers.map((s, i) => (
-                <SelectItem key={i} value={s.url}>{s.name}</SelectItem>
-              ))}
+              {finalDropdownServers.map((s, i) => {
+                let displayName = s.name;
+                if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-1 (Fast)';
+                if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-2 (HD)';
+                
+                return (
+                  <SelectItem key={i} value={s.url}>{displayName}</SelectItem>
+                );
+              })}
             </SelectContent>
           </Select>
 
