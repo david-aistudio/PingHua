@@ -24,8 +24,9 @@ export default function Episode() {
 
   useEffect(() => {
     if (episode && episode.streaming?.servers?.length > 0) {
-      // Smart Server Selection (OK.ru > Rumble > Others)
       const servers = episode.streaming.servers;
+      
+      // Strict Priority Logic: OK.ru > Rumble > Others
       const okRu = servers.find(s => s.name.toLowerCase().includes('ok.ru'));
       const rumble = servers.find(s => s.name.toLowerCase().includes('rumble'));
       
@@ -34,7 +35,7 @@ export default function Episode() {
       setSelectedServer(bestServer);
       window.scrollTo(0, 0);
 
-      // Save to history
+      // Save to history...
       if (episode.donghua_details && slug) {
         history.add({
           slug: episode.donghua_details.slug,
@@ -56,7 +57,16 @@ export default function Episode() {
     </div>
   </div>;
 
-  const servers = episode.streaming?.servers || [];
+  // Filter dropdown list to ONLY show OK.ru and Rumble
+  const allServers = episode.streaming?.servers || [];
+  const displayServers = allServers.filter(s => 
+    s.name.toLowerCase().includes('ok.ru') || 
+    s.name.toLowerCase().includes('rumble')
+  );
+
+  // If NO clean servers found at all, show all as emergency fallback
+  const finalDropdownServers = displayServers.length > 0 ? displayServers : allServers;
+
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
   const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
   const donghuaSlug = episode.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
@@ -93,13 +103,13 @@ export default function Episode() {
         <h1 className="text-xl md:text-2xl font-bold mb-4">{episode.episode}</h1>
         
         <div className="flex flex-wrap gap-4 mb-8">
-          {/* Server Selector */}
+          {/* Server Selector - LIMITED to OK.ru/Rumble */}
           <Select value={selectedServer} onValueChange={setSelectedServer}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Pilih Server" />
             </SelectTrigger>
             <SelectContent>
-              {servers.map((s, i) => (
+              {finalDropdownServers.map((s, i) => (
                 <SelectItem key={i} value={s.url}>{s.name}</SelectItem>
               ))}
             </SelectContent>
