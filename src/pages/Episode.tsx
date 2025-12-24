@@ -113,15 +113,22 @@ export default function Episode() {
       {/* THEATER MODE PLAYER SECTION */}
       <div className="w-full bg-black">
         <div className="max-w-[1800px] mx-auto">
-          <div className="relative w-full aspect-video md:h-[70vh] md:aspect-auto">
-            <iframe
-              src={selectedServer}
-              className="w-full h-full"
-              allowFullScreen
-              title={episode.episode}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              sandbox="allow-scripts allow-same-origin allow-presentation"
-            />
+          <div className="relative w-full aspect-video md:h-[70vh] md:aspect-auto flex items-center justify-center bg-zinc-900">
+            {selectedServer ? (
+              <iframe
+                src={selectedServer}
+                className="w-full h-full"
+                allowFullScreen
+                title={episode.episode}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                sandbox="allow-scripts allow-same-origin allow-presentation"
+              />
+            ) : (
+              <div className="text-white text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mx-auto mb-4"></div>
+                <p className="text-sm text-gray-400">Selecting best server...</p>
+              </div>
+            )}
           </div>
         </div>
       </div>
