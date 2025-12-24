@@ -90,7 +90,11 @@ Ingin menjalankan project ini di komputer lokal Anda? Ikuti langkah mudah ini:
 
 ## 📄 Lisensi
 
-Didistribusikan di bawah **MIT License**. Lihat `LICENSE` untuk informasi lebih lanjut.
+**Proprietary / Commercial Software.**
+
+Software ini dilindungi hak cipta. Penggunaan hanya diizinkan untuk keperluan **Personal & Edukasi (Local Run)**. Dilarang keras mendistribusikan ulang, memodifikasi, atau menggunakan untuk keperluan komersial tanpa izin tertulis dari pemilik (**David**).
+
+Lihat `LICENSE` untuk detail lengkap.
 
 ---
 
