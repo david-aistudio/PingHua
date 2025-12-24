@@ -31,67 +31,6 @@ export default function Episode() {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Filter servers for clean sources only
-  const allServers = episode.streaming.servers;
-  const cleanServers = allServers.filter(s => 
-    s.name.toLowerCase().includes('ok.ru') || 
-    s.name.toLowerCase().includes('rumble')
-  );
-
-  // Use clean servers if available, otherwise fallback to all (Emergency Mode)
-  const displayServers = cleanServers.length > 0 ? cleanServers : allServers;
-
-  useEffect(() => {
-    if (episode) {
-      // Smart Select: Pick the first available from our filtered display list
-      // Since cleanServers is already filtered for priority, the first one is the best one.
-      const bestServer = displayServers[0]?.url;
-      
-      setSelectedServer(bestServer || episode.streaming.main_url.url);
-      window.scrollTo(0, 0);
-
-      // Save to history
-      if (episode.donghua_details && slug) {
-        history.add({
-          slug: episode.donghua_details.slug,
-          title: episode.donghua_details.title,
-          episode: episode.episode,
-          episodeSlug: slug,
-          poster: episode.donghua_details.poster,
-        });
-      }
-    }
-  }, [episode, slug]); // Note: displayServers is derived from episode, so we don't need it in deps strictly if we trust episode changes triggers re-render
-
-  // Infinite scroll for episodes
-  const loadMoreEpisodes = useCallback(() => {
-    if (episode?.episodes_list && visibleEpisodes < episode.episodes_list.length) {
-      setVisibleEpisodes(prev => Math.min(prev + 20, episode.episodes_list!.length));
-    }
-  }, [episode, visibleEpisodes]);
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) {
-          loadMoreEpisodes();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    const currentTarget = observerTarget.current;
-    if (currentTarget) {
-      observer.observe(currentTarget);
-    }
-
-    return () => {
-      if (currentTarget) {
-        observer.unobserve(currentTarget);
-      }
-    };
-  }, [loadMoreEpisodes]);
-
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -115,6 +54,37 @@ export default function Episode() {
       </div>
     );
   }
+
+  // Filter servers for clean sources only (SAFE TO DO HERE)
+  const allServers = episode.streaming.servers;
+  const cleanServers = allServers.filter(s => 
+    s.name.toLowerCase().includes('ok.ru') || 
+    s.name.toLowerCase().includes('rumble')
+  );
+
+  // Use clean servers if available, otherwise fallback to all (Emergency Mode)
+  const displayServers = cleanServers.length > 0 ? cleanServers : allServers;
+
+  useEffect(() => {
+    if (episode && displayServers.length > 0) {
+      // Smart Select: Pick the first available from our filtered display list
+      const bestServer = displayServers[0]?.url;
+      
+      setSelectedServer(bestServer || episode.streaming.main_url.url);
+      window.scrollTo(0, 0);
+
+      // Save to history
+      if (episode.donghua_details && slug) {
+        history.add({
+          slug: episode.donghua_details.slug,
+          title: episode.donghua_details.title,
+          episode: episode.episode,
+          episodeSlug: slug,
+          poster: episode.donghua_details.poster,
+        });
+      }
+    }
+  }, [episode, slug]); // displayServers is derived from episode, so it's stable per episode change
 
   // Get navigation data - prioritize navigation object
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
