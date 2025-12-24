@@ -5,7 +5,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { Navbar } from "./components/Navbar";
-import { Footer } from "./components/Footer";
 import Home from "./pages/Home";
 import Ongoing from "./pages/Ongoing";
 import Completed from "./pages/Completed";
@@ -53,6 +52,7 @@ const App = () => {
                 <Route path="/" element={<Home />} />
                 <Route path="/ongoing" element={<Ongoing />} />
                 <Route path="/completed" element={<Completed />} />
+                <Route path="/search" element={<Search />} />
                 <Route path="/search/:keyword" element={<Search />} />
                 <Route path="/genres" element={<Genres />} />
                 <Route path="/genre/:slug" element={<GenreDetail />} />
@@ -63,7 +63,6 @@ const App = () => {
                 <Route path="*" element={<NotFound />} />
               </Routes>
             </main>
-            <Footer />
           </div>
         </BrowserRouter>
       </TooltipProvider>

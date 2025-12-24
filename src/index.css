@@ -2,83 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
-*/
-
 @layer base {
   :root {
+    /* Light Mode (Clean White Apple Style) */
     --background: 0 0% 100%;
-    --foreground: 240 10% 15%;
+    --foreground: 0 0% 0%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 240 10% 15%;
+    --card: 0 0% 96%;
+    --card-foreground: 0 0% 0%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 15%;
+    --popover-foreground: 0 0% 0%;
 
-    --primary: 263 70% 50%;
+    --primary: 0 0% 0%; /* Black Primary */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 240 5% 96%;
-    --secondary-foreground: 240 10% 15%;
+    --secondary: 0 0% 96.1%;
+    --secondary-foreground: 0 0% 9%;
 
-    --muted: 240 5% 96%;
-    --muted-foreground: 240 4% 46%;
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
 
-    --accent: 263 70% 95%;
-    --accent-foreground: 263 70% 50%;
+    --accent: 0 0% 96.1%;
+    --accent-foreground: 0 0% 9%;
 
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
-    --ring: 263 70% 50%;
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: 0 0% 0%;
 
-    --radius: 0.75rem;
-
-    /* Custom tokens */
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 50%), hsl(280 70% 60%));
-    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%), hsl(240 5% 98%));
-    --shadow-card: 0 2px 8px hsl(240 10% 15% / 0.08);
-    --shadow-hover: 0 8px 24px hsl(263 70% 50% / 0.15);
+    --radius: 1rem; /* More rounded like iOS */
   }
 
   .dark {
-    --background: 240 10% 8%;
-    --foreground: 0 0% 95%;
+    /* Dark Mode (True Black OLED Friendly) */
+    --background: 0 0% 0%; /* Pure Black */
+    --foreground: 0 0% 100%;
 
-    --card: 240 8% 12%;
-    --card-foreground: 0 0% 95%;
+    --card: 0 0% 11%; /* #1c1c1e Apple Dark Gray */
+    --card-foreground: 0 0% 100%;
 
-    --popover: 240 8% 12%;
-    --popover-foreground: 0 0% 95%;
+    --popover: 0 0% 11%;
+    --popover-foreground: 0 0% 100%;
 
-    --primary: 263 70% 55%;
-    --primary-foreground: 0 0% 100%;
+    --primary: 0 0% 100%; /* White Primary */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 240 6% 18%;
-    --secondary-foreground: 0 0% 95%;
+    --secondary: 0 0% 11%;
+    --secondary-foreground: 0 0% 100%;
 
-    --muted: 240 6% 18%;
-    --muted-foreground: 240 5% 60%;
+    --muted: 0 0% 11%;
+    --muted-foreground: 0 0% 60%; /* Subtitle Text */
 
-    --accent: 240 6% 18%;
-    --accent-foreground: 263 70% 55%;
+    --accent: 0 0% 14.9%; /* Slightly lighter gray for hover */
+    --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 63% 45%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
 
-    --border: 240 6% 20%;
-    --input: 240 6% 20%;
-    --ring: 263 70% 55%;
-
-    /* Custom tokens - dark */
-    --gradient-primary: linear-gradient(135deg, hsl(263 70% 55%), hsl(280 70% 65%));
-    --gradient-card: linear-gradient(180deg, hsl(240 8% 12%), hsl(240 8% 10%));
-    --shadow-card: 0 2px 8px hsl(0 0% 0% / 0.3);
-    --shadow-hover: 0 8px 24px hsl(263 70% 55% / 0.25);
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
   }
 }
 
@@ -86,8 +72,30 @@ All colors MUST be HSL.
   * {
     @apply border-border;
   }
-
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-white/20;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Modern Scrollbar - Hidden but functional (Mobile feel) */
+  ::-webkit-scrollbar {
+    width: 0px;
+    background: transparent;
+  }
+  
+  /* Utility for Apple-like Glass Blur */
+  .glass {
+    @apply bg-black/60 backdrop-blur-xl border border-white/10;
+  }
+  
+  /* Hide scrollbar utility */
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }

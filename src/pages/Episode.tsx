@@ -1,38 +1,52 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
-import { api, EpisodeDetail, Episode as EpisodeType } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { api } from '@/lib/api';
+import { history } from '@/lib/history';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export default function Episode() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [episode, setEpisode] = useState<EpisodeDetail | null>(null);
-  const [loading, setLoading] = useState(true);
   const [selectedServer, setSelectedServer] = useState('');
   const [visibleEpisodes, setVisibleEpisodes] = useState(20);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchEpisode = async () => {
-      if (!slug) return;
-
+  const { data: episode, isLoading: loading, error } = useQuery({
+    queryKey: ['episode', slug],
+    queryFn: async () => {
+      if (!slug) throw new Error('No slug provided');
       try {
-        setLoading(true);
-        const data = await api.getEpisode(slug);
-        setEpisode(data);
-        setSelectedServer(data.streaming.main_url.url);
-        window.scrollTo(0, 0);
-      } catch (error) {
-        console.error('Error fetching episode:', error);
-      } finally {
-        setLoading(false);
+        return await api.getEpisode(slug);
+      } catch (err) {
+        toast.error('Gagal memuat episode');
+        throw err;
       }
-    };
+    },
+    enabled: !!slug,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-    fetchEpisode();
-  }, [slug]);
+  useEffect(() => {
+    if (episode) {
+      setSelectedServer(episode.streaming.main_url.url);
+      window.scrollTo(0, 0);
+
+      // Save to history
+      if (episode.donghua_details && slug) {
+        history.add({
+          slug: episode.donghua_details.slug,
+          title: episode.donghua_details.title,
+          episode: episode.episode,
+          episodeSlug: slug,
+          poster: episode.donghua_details.poster,
+        });
+      }
+    }
+  }, [episode, slug]);
 
   // Infinite scroll for episodes
   const loadMoreEpisodes = useCallback(() => {
@@ -74,7 +88,7 @@ export default function Episode() {
     );
   }
 
-  if (!episode) {
+  if (error || !episode) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -95,116 +109,114 @@ export default function Episode() {
                       slug?.replace(/-episode-\d+.*/, '');
 
   return (
-    <div className="min-h-screen pb-8">
-      <div className="container mx-auto px-4 py-6">
-        {/* Header */}
-        <div className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-bold mb-1">{episode.episode}</h1>
-          {episode.donghua_details && (
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <Link to={`/detail/${donghuaSlug}`} className="hover:text-primary transition-colors">
-                {episode.donghua_details.title}
-              </Link>
-              <span>•</span>
-              <span>{episode.donghua_details.released}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Video Player */}
-        <div className="relative w-full bg-black rounded-lg overflow-hidden shadow-hover mb-6">
-          <div className="aspect-video">
+    <div className="min-h-screen pb-24 bg-background">
+      
+      {/* THEATER MODE PLAYER SECTION */}
+      <div className="w-full bg-black">
+        <div className="max-w-[1800px] mx-auto">
+          <div className="relative w-full aspect-video md:h-[70vh] md:aspect-auto">
             <iframe
               src={selectedServer}
               className="w-full h-full"
               allowFullScreen
               title={episode.episode}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             />
           </div>
         </div>
+      </div>
 
-        {/* Controls Section */}
-        <div className="space-y-3 mb-6">
-          {/* Server Selector Bar */}
-          {episode.streaming.servers.length > 0 && (
-            <div className="bg-card/50 backdrop-blur-sm border rounded-lg px-4 py-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-medium text-muted-foreground whitespace-nowrap">Select Video Server</span>
-                <Select value={selectedServer} onValueChange={setSelectedServer}>
-                  <SelectTrigger className="h-8 w-[140px] text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {episode.streaming.servers.map((server, index) => (
-                      <SelectItem key={index} value={server.url}>
-                        {server.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+      <div className="container mx-auto px-4 py-6">
+        
+        {/* Info & Controls (Like YouTube) */}
+        <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-6 mb-8">
+            
+            {/* Title & Meta */}
+            <div className="flex-1 space-y-2">
+                <h1 className="text-xl md:text-2xl font-bold leading-tight">{episode.episode}</h1>
+                {episode.donghua_details && (
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <Link to={`/detail/${donghuaSlug}`} className="hover:text-primary transition-colors font-medium text-foreground/80">
+                        {episode.donghua_details.title}
+                    </Link>
+                    <span>•</span>
+                    <span>{episode.donghua_details.released}</span>
+                    </div>
+                )}
             </div>
-          )}
 
-          {/* Navigation Buttons */}
-          <div className="flex items-center gap-2">
-            {prevEpisode ? (
-              <Button
-                onClick={() => navigate(`/episode/${prevEpisode.slug}`)}
-                variant="outline"
-                size="sm"
-                className="h-9 px-3"
-              >
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Prev</span>
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" className="h-9 px-3" disabled>
-                <ChevronLeft className="h-4 w-4 mr-1" />
-                <span className="hidden sm:inline">Prev</span>
-              </Button>
-            )}
+            {/* Server & Nav Controls */}
+            <div className="flex flex-col gap-3 w-full md:w-auto">
+                {/* Server Selector */}
+                {episode.streaming.servers.length > 0 && (
+                    <div className="flex items-center justify-between md:justify-end gap-3 bg-secondary/30 p-2 rounded-lg">
+                        <span className="text-xs font-medium text-muted-foreground whitespace-nowrap px-2">Server</span>
+                        <Select value={selectedServer} onValueChange={setSelectedServer}>
+                            <SelectTrigger className="h-8 w-[140px] text-xs bg-background border-border/50">
+                                <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                                {episode.streaming.servers.map((server, index) => (
+                                <SelectItem key={index} value={server.url}>
+                                    {server.name}
+                                </SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </div>
+                )}
 
-            <Link to={`/detail/${donghuaSlug}`} className="flex-1">
-              <Button variant="default" className="w-full h-9">
-                <Home className="h-4 w-4 mr-2" />
-                All Episodes
-              </Button>
-            </Link>
+                {/* Navigation Buttons */}
+                <div className="flex items-center gap-2">
+                    <Button
+                        onClick={() => prevEpisode ? navigate(`/episode/${prevEpisode.slug}`) : null}
+                        disabled={!prevEpisode}
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1 md:flex-none"
+                    >
+                        <ChevronLeft className="h-4 w-4 mr-1" /> Prev
+                    </Button>
 
-            {nextEpisode ? (
-              <Button
-                onClick={() => navigate(`/episode/${nextEpisode.slug}`)}
-                variant="outline"
-                size="sm"
-                className="h-9 px-3"
-              >
-                <span className="hidden sm:inline">Next</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            ) : (
-              <Button variant="outline" size="sm" className="h-9 px-3" disabled>
-                <span className="hidden sm:inline">Next</span>
-                <ChevronRight className="h-4 w-4 ml-1" />
-              </Button>
-            )}
-          </div>
+                    <Button
+                        onClick={() => nextEpisode ? navigate(`/episode/${nextEpisode.slug}`) : null}
+                        disabled={!nextEpisode}
+                        variant="secondary"
+                        size="sm"
+                        className="flex-1 md:flex-none"
+                    >
+                        Next <ChevronRight className="h-4 w-4 ml-1" />
+                    </Button>
+                </div>
+            </div>
         </div>
 
-        {/* Episodes List with Infinite Scroll */}
+        {/* Separator */}
+        <div className="h-px w-full bg-border/50 mb-8" />
+
+        {/* Episodes List */}
         {episode.episodes_list && episode.episodes_list.length > 0 && (
-          <div className="mt-8">
-            <h2 className="text-xl font-bold mb-4">All Episodes</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+                <h2 className="text-lg font-bold">Episodes</h2>
+                <Link to={`/detail/${donghuaSlug}`}>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-foreground">
+                        <Home className="w-4 h-4 mr-2" />
+                        Detail Info
+                    </Button>
+                </Link>
+            </div>
+            
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-2">
               {episode.episodes_list.slice(0, visibleEpisodes).map((ep, index) => {
                 const isCurrentEpisode = ep.slug === slug;
                 return (
                   <Link key={index} to={`/episode/${ep.slug}`}>
                     <Button
                       variant={isCurrentEpisode ? "default" : "outline"}
-                      className="w-full h-auto py-3 transition-all"
+                      className={`w-full h-10 text-xs ${isCurrentEpisode ? 'font-bold' : 'font-normal text-muted-foreground'}`}
                     >
-                      Ep {episode.episodes_list!.length - index}
+                      {episode.episodes_list!.length - index}
                     </Button>
                   </Link>
                 );
@@ -212,10 +224,12 @@ export default function Episode() {
             </div>
 
             {/* Infinite scroll trigger */}
-            <div ref={observerTarget} className="mt-4">
+            <div ref={observerTarget} className="mt-6 flex justify-center">
               {visibleEpisodes < episode.episodes_list.length && (
-                <div className="text-center text-sm text-muted-foreground">
-                  Loading more episodes...
+                <div className="loading-dots flex gap-1">
+                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 bg-primary/50 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                 </div>
               )}
             </div>

@@ -1,7 +1,13 @@
 {
-  "name": "vite_react_shadcn_ts",
+  "name": "pinghua-web",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Platform Nonton Donghua Subtitle Indonesia Premium",
+  "author": "David <papengcepoko@gmail.com>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/david-aistudio/pinghua"
+  },
   "type": "module",
   "scripts": {
     "dev": "vite",

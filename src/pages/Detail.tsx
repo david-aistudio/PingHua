@@ -1,15 +1,15 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { Play, Calendar, Clock, Star } from 'lucide-react';
-import { api, DonghuaDetail, Episode } from '@/lib/api';
+import { useQuery } from '@tanstack/react-query';
+import { toast } from 'sonner';
+import { api, DonghuaDetail } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 
 export default function Detail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
-  const [donghua, setDonghua] = useState<DonghuaDetail | null>(null);
-  const [loading, setLoading] = useState(true);
   const [visibleEpisodes, setVisibleEpisodes] = useState(20);
   const observerTarget = useRef<HTMLDivElement>(null);
 
@@ -18,34 +18,32 @@ export default function Detail() {
     if (slug && slug.includes('-episode-')) {
       // Redirect to episode page
       navigate(`/episode/${slug}`, { replace: true });
-      return;
     }
+  }, [slug, navigate]);
 
-    const fetchDetail = async () => {
-      if (!slug) return;
-
+  const { data: donghua, isLoading: loading, error } = useQuery({
+    queryKey: ['detail', slug],
+    queryFn: async () => {
+      if (!slug) throw new Error('No slug provided');
       try {
-        setLoading(true);
         const data = await api.getDetail(slug);
-        
         // Validate if data has required fields
         if (data && data.title) {
-          setDonghua(data);
-        } else {
-          console.error('Invalid donghua data received');
-          setDonghua(null);
+          return data;
         }
-      } catch (error) {
-        console.error('Error fetching detail:', error);
-        setDonghua(null);
-      } finally {
-        setLoading(false);
+        throw new Error('Invalid donghua data');
+      } catch (err) {
+        toast.error('Gagal memuat detail donghua');
+        throw err;
       }
-    };
+    },
+    enabled: !!slug && !slug.includes('-episode-'),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 
-    fetchDetail();
+  useEffect(() => {
     window.scrollTo(0, 0);
-  }, [slug, navigate]);
+  }, [slug]);
 
   // Infinite scroll for episodes
   const loadMoreEpisodes = useCallback(() => {
@@ -93,7 +91,7 @@ export default function Detail() {
     );
   }
 
-  if (!donghua) {
+  if (error || !donghua) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
