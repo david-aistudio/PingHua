@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { Helmet } from 'react-helmet-async';
 import { api } from '@/lib/api';
 import { history } from '@/lib/history';
 import { Button } from '@/components/ui/button';
@@ -23,8 +24,14 @@ export default function Episode() {
 
   useEffect(() => {
     if (episode && episode.streaming?.servers?.length > 0) {
-      // Langsung pilih server pertama tanpa filter ribet biar gak crash
-      setSelectedServer(episode.streaming.servers[0].url);
+      // Smart Server Selection (OK.ru > Rumble > Others)
+      const servers = episode.streaming.servers;
+      const okRu = servers.find(s => s.name.toLowerCase().includes('ok.ru'));
+      const rumble = servers.find(s => s.name.toLowerCase().includes('rumble'));
+      
+      const bestServer = okRu?.url || rumble?.url || servers[0].url;
+      
+      setSelectedServer(bestServer);
       window.scrollTo(0, 0);
 
       // Save to history
@@ -42,7 +49,12 @@ export default function Episode() {
 
   if (loading) return <div className="min-h-screen bg-black flex items-center justify-center text-white text-xl">Loading Episode...</div>;
   
-  if (error || !episode) return <div className="min-h-screen bg-black flex items-center justify-center text-white">Episode Gak Ketemu / API Error</div>;
+  if (error || !episode) return <div className="min-h-screen bg-black flex items-center justify-center text-white text-center p-4">
+    <div>
+        <h1 className="text-2xl font-bold mb-4">Episode Gak Ketemu / API Error</h1>
+        <Link to="/"><Button>Kembali ke Home</Button></Link>
+    </div>
+  </div>;
 
   const servers = episode.streaming?.servers || [];
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
@@ -51,8 +63,15 @@ export default function Episode() {
 
   return (
     <div className="min-h-screen pb-24 bg-background text-foreground">
+      <Helmet>
+        <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
+        <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
+        <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
+        <meta property="og:image" content={episode.donghua_details?.poster} />
+        <meta property="og:type" content="video.episode" />
+      </Helmet>
       
-      {/* VIDEO PLAYER - BASIC MODE */}
+      {/* VIDEO PLAYER */}
       <div className="w-full bg-black aspect-video">
         {selectedServer ? (
           <iframe
@@ -60,9 +79,11 @@ export default function Episode() {
             className="w-full h-full"
             allowFullScreen
             title="Video Player"
+            sandbox="allow-scripts allow-same-origin allow-presentation"
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-gray-500">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mr-3"></div>
             Memulai Player...
           </div>
         )}

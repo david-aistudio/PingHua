@@ -87,15 +87,14 @@ async function generateSitemap() {
 </urlset>`;
 
   // 4. Write to public/sitemap.xml
-  const publicDir = path.resolve(__dirname, 'public');
+  const publicDir = path.resolve(__dirname, '..', 'public');
   // Ensure public dir exists (it should in Vite project)
   if (!fs.existsSync(publicDir)) {
-      // Fallback if running from root
-      fs.writeFileSync('public/sitemap.xml', sitemap);
-  } else {
-      fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
+      console.error('❌ Public directory not found at:', publicDir);
+      return;
   }
-
+  
+  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
   console.log(`✅ Sitemap generated with ${staticPages.length + uniqueUrls.size} URLs!`);
 }
 
