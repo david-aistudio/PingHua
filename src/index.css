@@ -39,7 +39,7 @@
   .dark {
     /* Dark Mode (True Black OLED Friendly) */
     --background: 0 0% 0%; /* Pure Black */
-    --foreground: 0 0% 100%;
+    --foreground: 0 0% 100%; /* Pure White */
 
     --card: 0 0% 11%; /* #1c1c1e Apple Dark Gray */
     --card-foreground: 0 0% 100%;
@@ -54,9 +54,9 @@
     --secondary-foreground: 0 0% 100%;
 
     --muted: 0 0% 11%;
-    --muted-foreground: 0 0% 60%; /* Subtitle Text */
+    --muted-foreground: 0 0% 70%; /* Brighter Muted Text */
 
-    --accent: 0 0% 14.9%; /* Slightly lighter gray for hover */
+    --accent: 0 0% 14.9%; 
     --accent-foreground: 0 0% 100%;
 
     --destructive: 0 62.8% 30.6%;
@@ -73,7 +73,9 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground antialiased font-sans selection:bg-white/20;
+    @apply bg-background text-foreground antialiased font-sans selection:bg-white/20 tracking-tight;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   html {
     scroll-behavior: smooth;
