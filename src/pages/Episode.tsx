@@ -26,13 +26,19 @@ export default function Episode() {
     if (episode && episode.streaming?.servers?.length > 0) {
       const servers = episode.streaming.servers;
       
-      // Strict Priority Logic: OK.ru > Rumble > Others
-      const okRu = servers.find(s => s.name.toLowerCase().includes('ok.ru'));
-      const rumble = servers.find(s => s.name.toLowerCase().includes('rumble'));
+      // EXCLUSIVE Priority Logic (Rumble > OK.ru)
+      const rumble = servers.find(s => s.name && s.name.toLowerCase().includes('rumble'));
+      const okRu = servers.find(s => s.name && s.name.toLowerCase().includes('ok.ru'));
       
-      const bestServer = okRu?.url || rumble?.url || servers[0].url;
+      const bestServer = rumble?.url || okRu?.url;
       
-      setSelectedServer(bestServer);
+      if (bestServer) {
+        setSelectedServer(bestServer);
+      } else {
+        // Absolute fallback to first server ONLY if our clean ones are missing
+        setSelectedServer(servers[0].url);
+      }
+      
       window.scrollTo(0, 0);
 
       // Save to history...
@@ -57,15 +63,11 @@ export default function Episode() {
     </div>
   </div>;
 
-  // Filter dropdown list to ONLY show OK.ru and Rumble
+  // Filter dropdown: STRICTLY Rumble and OK.ru only
   const allServers = episode.streaming?.servers || [];
   const displayServers = allServers.filter(s => 
-    s.name.toLowerCase().includes('ok.ru') || 
-    s.name.toLowerCase().includes('rumble')
+    s.name && (s.name.toLowerCase().includes('rumble') || s.name.toLowerCase().includes('ok.ru'))
   );
-
-  // If NO clean servers found at all, show all as emergency fallback
-  const finalDropdownServers = displayServers.length > 0 ? displayServers : allServers;
 
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
   const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
@@ -104,16 +106,16 @@ export default function Episode() {
         <h1 className="text-xl md:text-2xl font-bold mb-4">{episode.episode}</h1>
         
         <div className="flex flex-wrap gap-4 mb-8">
-          {/* Server Selector - LIMITED to OK.ru/Rumble */}
+          {/* Server Selector - STRICTLY Rumble and OK.ru */}
           <Select value={selectedServer} onValueChange={setSelectedServer}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="Pilih Server" />
             </SelectTrigger>
             <SelectContent>
-              {finalDropdownServers.map((s, i) => {
+              {displayServers.map((s, i) => {
                 let displayName = s.name;
-                if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-1 (Fast)';
-                if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-2 (HD)';
+                if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-1 (Clean)';
+                if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-2 (Fast)';
                 
                 return (
                   <SelectItem key={i} value={s.url}>{displayName}</SelectItem>
