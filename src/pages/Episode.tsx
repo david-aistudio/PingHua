@@ -26,19 +26,15 @@ export default function Episode() {
     if (episode && episode.streaming?.servers?.length > 0) {
       const servers = episode.streaming.servers;
       
-      // EXCLUSIVE Priority Logic (Rumble > OK.ru)
+      // SILENT Priority Logic
       const rumble = servers.find(s => s.name && s.name.toLowerCase().includes('rumble'));
       const okRu = servers.find(s => s.name && s.name.toLowerCase().includes('ok.ru'));
       
-      const bestServer = rumble?.url || okRu?.url;
+      // We play Rumble if available, otherwise OK.ru, otherwise fallback.
+      // But only Rumble will be visible in the UI.
+      const bestServer = rumble?.url || okRu?.url || servers[0].url;
       
-      if (bestServer) {
-        setSelectedServer(bestServer);
-      } else {
-        // Absolute fallback to first server ONLY if our clean ones are missing
-        setSelectedServer(servers[0].url);
-      }
-      
+      setSelectedServer(bestServer);
       window.scrollTo(0, 0);
 
       // Save to history...
@@ -63,10 +59,10 @@ export default function Episode() {
     </div>
   </div>;
 
-  // Filter dropdown: STRICTLY Rumble and OK.ru only
+  // Filter dropdown: STRICTLY Rumble only (Hiding OK.ru from UI)
   const allServers = episode.streaming?.servers || [];
   const displayServers = allServers.filter(s => 
-    s.name && (s.name.toLowerCase().includes('rumble') || s.name.toLowerCase().includes('ok.ru'))
+    s.name && s.name.toLowerCase().includes('rumble')
   );
 
   const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
@@ -78,7 +74,6 @@ export default function Episode() {
       <Helmet>
         <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
         <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
-        <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
         <meta property="og:image" content={episode.donghua_details?.poster} />
         <meta property="og:type" content="video.episode" />
@@ -106,21 +101,19 @@ export default function Episode() {
         <h1 className="text-xl md:text-2xl font-bold mb-4">{episode.episode}</h1>
         
         <div className="flex flex-wrap gap-4 mb-8">
-          {/* Server Selector - STRICTLY Rumble and OK.ru */}
+          {/* Server Selector - ONLY SHOWS RUMBLE */}
           <Select value={selectedServer} onValueChange={setSelectedServer}>
             <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Pilih Server" />
+              <SelectValue placeholder="Server Utama" />
             </SelectTrigger>
             <SelectContent>
-              {displayServers.map((s, i) => {
-                let displayName = s.name;
-                if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-1 (Clean)';
-                if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-2 (Fast)';
-                
-                return (
-                  <SelectItem key={i} value={s.url}>{displayName}</SelectItem>
-                );
-              })}
+              {displayServers.length > 0 ? (
+                displayServers.map((s, i) => (
+                  <SelectItem key={i} value={s.url}>Free-1 (Clean)</SelectItem>
+                ))
+              ) : (
+                <SelectItem value={selectedServer}>Server Backup</SelectItem>
+              )}
             </SelectContent>
           </Select>
 
