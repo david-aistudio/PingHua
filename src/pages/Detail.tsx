@@ -110,6 +110,7 @@ export default function Detail() {
       <Helmet>
         <title>{`Nonton ${donghua.title} Subtitle Indonesia - PingHua`}</title>
         <meta name="description" content={`Nonton Donghua ${donghua.title} Subtitle Indonesia. ${donghua.synopsis?.slice(0, 150)}...`} />
+        <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content={`Nonton ${donghua.title} Subtitle Indonesia - PingHua`} />
         <meta property="og:description" content={`Streaming Donghua ${donghua.title} gratis dengan kualitas HD.`} />
         <meta property="og:image" content={donghua.poster} />

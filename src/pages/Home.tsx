@@ -60,6 +60,7 @@ export default function Home() {
       <Helmet>
         <title>PingHua - Nonton Donghua Sub Indo Gratis Terbaru</title>
         <meta name="description" content="PingHua adalah platform streaming Donghua (animasi China) subtitle Indonesia terlengkap dan terupdate. Nonton gratis kualitas HD tanpa iklan mengganggu." />
+        <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content="PingHua - Nonton Donghua Sub Indo Gratis Terbaru" />
         <meta property="og:description" content="Streaming Donghua subtitle Indonesia terbaru dan terlengkap hanya di PingHua." />
         <meta property="og:type" content="website" />

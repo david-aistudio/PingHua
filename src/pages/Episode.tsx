@@ -76,6 +76,7 @@ export default function Episode() {
       <Helmet>
         <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
         <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
+        <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
         <meta property="og:image" content={episode.donghua_details?.poster} />
         <meta property="og:type" content="video.episode" />
