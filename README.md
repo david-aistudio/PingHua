@@ -98,6 +98,9 @@ Lihat `LICENSE` untuk detail lengkap.
 
 ---
 
+*Last Updated: 2025*
+
+
 <div align="center">
   <p>Dibuat dengan ❤️ dan ☕ oleh <strong>David</strong></p>
   <p>
