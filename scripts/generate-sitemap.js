@@ -30,37 +30,70 @@ async function generateSitemap() {
     '/by-year',
   ];
 
-  // 2. Fetch Dynamic Content (Home, Ongoing, Completed)
-  // We fetch page 1 of each to get the latest/trending items for the sitemap
-  const [homeData, ongoingData, completedData] = await Promise.all([
-    fetchFromApi('home/1'),
-    fetchFromApi('ongoing/1'),
-    fetchFromApi('completed/1'),
-  ]);
+  // 2. Fetch Dynamic Content
+  console.log('⏳ Fetching dynamic data...');
+  
+  // Fetch Genres
+  const genresData = await fetchFromApi('genres');
+  
+  // Helper to fetch multiple pages
+  const fetchPages = async (endpoint, maxPage) => {
+    const promises = [];
+    for (let i = 1; i <= maxPage; i++) {
+      promises.push(fetchFromApi(`${endpoint}/${i}`));
+    }
+    return Promise.all(promises);
+  };
+
+  // Fetch Home (Just page 1 is enough for latest)
+  const homeData = await fetchFromApi('home/1');
+  
+  // Fetch Ongoing (Deep crawl: 3 pages)
+  const ongoingPages = await fetchPages('ongoing', 3);
+  
+  // Fetch Completed (Deep crawl: 3 pages)
+  const completedPages = await fetchPages('completed', 3);
 
   let dynamicUrls = [];
 
   // Helper to add anime detail links
-  const addAnimeLinks = (list) => {
+  const addAnimeLinks = (list, priority = 0.8, changefreq = 'daily') => {
     if (!list) return;
     list.forEach(item => {
       if (item.slug) {
-        // Clean slug (sometimes it has slashes)
         const cleanSlug = item.slug.replace(/^\/|\/$/g, '');
-        // Priority high for detail pages
-        dynamicUrls.push({ url: `/detail/${cleanSlug}`, priority: 0.8, changefreq: 'daily' });
+        dynamicUrls.push({ 
+          url: `/detail/${cleanSlug}`, 
+          priority, 
+          changefreq 
+        });
       }
     });
   };
 
-  // Add from Home (Latest Release)
-  if (homeData?.latest_release) addAnimeLinks(homeData.latest_release);
-  
-  // Add from Ongoing
-  if (ongoingData?.ongoing_donghua) addAnimeLinks(ongoingData.ongoing_donghua);
+  // Process Genres
+  if (genresData?.data) {
+    genresData.data.forEach(genre => {
+        dynamicUrls.push({ 
+            url: `/genre/${genre.slug}`, 
+            priority: 0.9, 
+            changefreq: 'weekly' 
+        });
+    });
+  }
 
-  // Add from Completed
-  if (completedData?.completed_donghua) addAnimeLinks(completedData.completed_donghua);
+  // Process Home
+  if (homeData?.latest_release) addAnimeLinks(homeData.latest_release, 1.0, 'always'); // Latest is HOT
+
+  // Process Ongoing Pages
+  ongoingPages.forEach(page => {
+      if (page?.ongoing_donghua) addAnimeLinks(page.ongoing_donghua, 0.9, 'daily');
+  });
+
+  // Process Completed Pages
+  completedPages.forEach(page => {
+      if (page?.completed_donghua) addAnimeLinks(page.completed_donghua, 0.7, 'monthly');
+  });
 
   // Remove duplicates
   const uniqueUrls = new Map();
