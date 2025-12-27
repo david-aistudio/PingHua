@@ -23,8 +23,19 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
   if (!items || items.length === 0) return null
 
   return (
-    <div className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-black font-sans">
+    <div className="relative w-full h-[60vh] md:h-[80vh] overflow-hidden bg-black font-sans group">
       
+      {/* Brand Logo - Top Left Overlay */}
+      <div className="absolute top-6 left-6 z-50">
+        <Link to="/">
+            <img 
+                src="/logo.png" 
+                alt="PingHua" 
+                className="h-12 md:h-16 w-auto object-contain drop-shadow-lg hover:opacity-80 transition-opacity"
+            />
+        </Link>
+      </div>
+
       {/* Slides */}
       {items.map((item, index) => {
         const isActive = index === selectedIndex;
