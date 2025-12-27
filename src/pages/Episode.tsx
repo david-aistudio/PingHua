@@ -26,12 +26,11 @@ export default function Episode() {
     if (episode && episode.streaming?.servers?.length > 0) {
       const servers = episode.streaming.servers;
       
-      // SILENT Priority Logic
+      // SILENT Priority Logic (Rumble > OK.ru)
       const rumble = servers.find(s => s.name && s.name.toLowerCase().includes('rumble'));
       const okRu = servers.find(s => s.name && s.name.toLowerCase().includes('ok.ru'));
       
-      // We play Rumble if available, otherwise OK.ru, otherwise fallback.
-      // But only Rumble will be visible in the UI.
+      // Rumble is priority 1, OK.ru is priority 2
       const bestServer = rumble?.url || okRu?.url || servers[0].url;
       
       setSelectedServer(bestServer);
@@ -59,63 +58,151 @@ export default function Episode() {
     </div>
   </div>;
 
-  // Filter dropdown: STRICTLY Rumble only (Hiding OK.ru from UI)
-  const allServers = episode.streaming?.servers || [];
-  const displayServers = allServers.filter(s => 
-    s.name && s.name.toLowerCase().includes('rumble')
-  );
+    // Filter dropdown: STRICT Integrity Check
 
-  const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
-  const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
-  const donghuaSlug = episode.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
+    const allServers = episode.streaming?.servers || [];
 
-  return (
-    <div className="min-h-screen pb-24 bg-background text-foreground">
-      <Helmet>
-        <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
-        <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
-        <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
-        <meta property="og:image" content={episode.donghua_details?.poster} />
-        <meta property="og:type" content="video.episode" />
-      </Helmet>
+    const displayServers = allServers.filter(s => {
+
+      if (!s.name || !s.url) return false;
+
       
-      {/* VIDEO PLAYER */}
-      <div className="w-full bg-black aspect-video">
-        {selectedServer ? (
-          <iframe
-            src={selectedServer}
-            className="w-full h-full"
-            allowFullScreen
-            title="Video Player"
-            sandbox="allow-scripts allow-same-origin allow-presentation"
-          />
-        ) : (
-          <div className="w-full h-full flex items-center justify-center text-gray-500">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mr-3"></div>
-            Memulai Player...
-          </div>
-        )}
-      </div>
 
-      <div className="container mx-auto px-4 py-6">
-        <h1 className="text-xl md:text-2xl font-bold mb-4">{episode.episode}</h1>
+      const nameLower = s.name.toLowerCase();
+
+      const urlLower = s.url.toLowerCase();
+
+      
+
+      // Integrity Check: Label and URL must both match clean sources
+
+      const isRumble = nameLower.includes('rumble') && urlLower.includes('rumble.com');
+
+      const isOkRu = nameLower.includes('ok.ru') && urlLower.includes('ok.ru');
+
+      
+
+      return isRumble || isOkRu;
+
+    });
+
+  
+
+    const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
+
+    const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
+
+    const donghuaSlug = episode.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
+
+  
+
+    return (
+
+      <div className="min-h-screen pb-24 bg-background text-foreground">
+
+        <Helmet>
+
+          <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
+
+          <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
+
+          <meta property="og:site_name" content="PingHua" />
+
+          <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
+
+          <meta property="og:image" content={episode.donghua_details?.poster} />
+
+          <meta property="og:type" content="video.episode" />
+
+        </Helmet>
+
         
-        <div className="flex flex-wrap gap-4 mb-8">
-          {/* Server Selector - ONLY SHOWS RUMBLE */}
-          <Select value={selectedServer} onValueChange={setSelectedServer}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Server Utama" />
-            </SelectTrigger>
-            <SelectContent>
-              {displayServers.length > 0 ? (
-                displayServers.map((s, i) => (
-                  <SelectItem key={i} value={s.url}>Free-1 (Clean)</SelectItem>
-                ))
-              ) : (
-                <SelectItem value={selectedServer}>Server Backup</SelectItem>
-              )}
-            </SelectContent>
-          </Select>
+
+        {/* VIDEO PLAYER */}
+
+        <div className="w-full bg-black aspect-video">
+
+          {selectedServer ? (
+
+            <iframe
+
+              src={selectedServer}
+
+              className="w-full h-full"
+
+              allowFullScreen
+
+              title="Video Player"
+
+              sandbox="allow-scripts allow-same-origin allow-presentation"
+
+            />
+
+          ) : (
+
+            <div className="w-full h-full flex items-center justify-center text-gray-500">
+
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white mr-3"></div>
+
+              Memulai Player...
+
+            </div>
+
+          )}
+
+        </div>
+
+  
+
+        <div className="container mx-auto px-4 py-6">
+
+          <h1 className="text-xl md:text-2xl font-bold mb-4">{episode.episode}</h1>
+
+          
+
+          <div className="flex flex-wrap gap-4 mb-8">
+
+            {/* Server Selector - STRICT Integrity */}
+
+            <Select value={selectedServer} onValueChange={setSelectedServer}>
+
+              <SelectTrigger className="w-[200px]">
+
+                <SelectValue placeholder="Pilih Server" />
+
+              </SelectTrigger>
+
+              <SelectContent>
+
+                {displayServers.length > 0 ? (
+
+                  displayServers.map((s, i) => {
+
+                    let displayName = s.name;
+
+                    if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-1 (Clean)';
+
+                    if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-2 (Fast)';
+
+                    
+
+                    return (
+
+                      <SelectItem key={i} value={s.url}>{displayName}</SelectItem>
+
+                    );
+
+                  })
+
+                ) : (
+
+                  <SelectItem value={selectedServer}>Server Backup</SelectItem>
+
+                )}
+
+              </SelectContent>
+
+            </Select>
 
           {/* Nav Buttons */}
           <div className="flex gap-2">
