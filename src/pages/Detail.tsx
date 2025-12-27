@@ -108,8 +108,8 @@ export default function Detail() {
   return (
     <div className="min-h-screen">
       <Helmet>
-        <title>{`Nonton ${donghua.title} Subtitle Indonesia - PingHua`}</title>
-        <meta name="description" content={`Nonton Donghua ${donghua.title} Subtitle Indonesia. ${donghua.synopsis?.slice(0, 150)}...`} />
+        <title>{`Nonton ${donghua.title} Sub Indo Full Episode (Terbaru) - PingHua`}</title>
+        <meta name="description" content={`Streaming ${donghua.title} Subtitle Indonesia kualitas HD gratis. ${donghua.synopsis?.slice(0, 120)}... Nonton donghua terlengkap dan terupdate tanpa iklan.`} />
         <link rel="canonical" href={`https://pinghua.qzz.io/detail/${slug}`} />
         <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content={`Nonton ${donghua.title} Subtitle Indonesia - PingHua`} />
