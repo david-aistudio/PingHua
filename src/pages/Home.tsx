@@ -8,6 +8,7 @@ import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid } from '@/components/LoadingSkeleton';
 import { Button } from '@/components/ui/button';
 import { HeroCarousel } from '@/components/HeroCarousel';
+import { ContinueWatching } from '@/components/ContinueWatching';
 import { Footer } from '@/components/Footer';
 
 export default function Home() {
@@ -78,6 +79,9 @@ export default function Home() {
       </div>
 
       <div className="container mx-auto px-4 py-8 space-y-16">
+        {/* Continue Watching Section */}
+        <ContinueWatching />
+
         {/* Latest Release */}
         <section>
           <div className="flex items-center justify-between mb-6">
