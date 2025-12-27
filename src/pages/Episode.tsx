@@ -192,12 +192,14 @@ export default function Episode() {
                 variant="secondary"
                 size="icon"
                 onClick={() => {
+                  const shareData = {
+                    title: `Nonton ${episode.donghua_details?.title || 'Donghua'} ${episode.episode}`,
+                    text: `Nonton ${episode.donghua_details?.title || ''} ${episode.episode} Sub Indo Gratis di PingHua!`,
+                    url: window.location.href,
+                  };
+
                   if (navigator.share) {
-                    navigator.share({
-                      title: document.title,
-                      text: `Nonton ${episode.episode} Sub Indo Gratis!`,
-                      url: window.location.href,
-                    });
+                    navigator.share(shareData).catch((err) => console.log('Error sharing:', err));
                   } else {
                     navigator.clipboard.writeText(window.location.href);
                     toast.success('Link episode disalin!');

@@ -219,8 +219,8 @@ export default function Detail() {
                 className="w-full sm:w-auto"
                 onClick={() => {
                   const shareData = {
-                    title: `Nonton ${donghua.title} Sub Indo`,
-                    text: `Nonton Donghua ${donghua.title} Subtitle Indonesia Gratis di PingHua!`,
+                    title: `Nonton ${donghua.title}`,
+                    text: `Nonton Donghua ${donghua.title} Sub Indo Gratis di PingHua!`,
                     url: window.location.href,
                   };
 
