@@ -110,12 +110,37 @@ export default function Detail() {
       <Helmet>
         <title>{`Nonton ${donghua.title} Subtitle Indonesia - PingHua`}</title>
         <meta name="description" content={`Nonton Donghua ${donghua.title} Subtitle Indonesia. ${donghua.synopsis?.slice(0, 150)}...`} />
+        <link rel="canonical" href={`https://pinghua.qzz.io/detail/${slug}`} />
         <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content={`Nonton ${donghua.title} Subtitle Indonesia - PingHua`} />
         <meta property="og:description" content={`Streaming Donghua ${donghua.title} gratis dengan kualitas HD.`} />
         <meta property="og:image" content={donghua.poster} />
         <meta property="og:type" content="video.tv_show" />
         <meta property="og:url" content={`https://pinghua.qzz.io/detail/${slug}`} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "TVSeries",
+            "name": donghua.title,
+            "alternativeHeadline": donghua.alter_title,
+            "image": donghua.poster,
+            "description": donghua.synopsis?.slice(0, 200),
+            "genre": donghua.genres?.map(g => g.name),
+            "numberOfEpisodes": donghua.episodes_count,
+            "status": donghua.status,
+            "author": {
+              "@type": "Organization",
+              "name": "PingHua",
+              "url": "https://pinghua.qzz.io/"
+            },
+            "aggregateRating": donghua.rating ? {
+              "@type": "AggregateRating",
+              "ratingValue": donghua.rating,
+              "bestRating": "10",
+              "ratingCount": "100"
+            } : undefined
+          })}
+        </script>
       </Helmet>
 
       {/* Hero Section */}

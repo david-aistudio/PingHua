@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Search as SearchIcon, TrendingUp } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { useQuery } from '@tanstack/react-query';
 import { api } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
@@ -43,6 +44,10 @@ export default function Search() {
 
   return (
     <div className="min-h-screen pt-24 pb-24">
+      <Helmet>
+        <title>{debouncedQuery ? `Cari: ${debouncedQuery} - PingHua` : 'Cari Donghua - PingHua'}</title>
+        <meta name="robots" content="noindex, follow" />
+      </Helmet>
       <div className="container mx-auto px-4">
         
         {/* Search Header */}

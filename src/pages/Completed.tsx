@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { CheckCircle2 } from 'lucide-react';
+import { Helmet } from 'react-helmet-async';
 import { api, DonghuaCard as DonghuaCardType } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid, LoadingSkeleton } from '@/components/LoadingSkeleton';
@@ -65,6 +66,12 @@ export default function Completed() {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>Completed Donghua - Nonton Donghua Tamat Sub Indo</title>
+        <meta name="description" content="Koleksi Donghua yang sudah tamat (Completed) subtitle Indonesia lengkap, bisa ditonton maraton." />
+        <link rel="canonical" href="https://pinghua.qzz.io/completed" />
+        <meta property="og:title" content="Completed Donghua - PingHua" />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         <div className="flex items-center gap-3 mb-8">
           <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-green-500/10">

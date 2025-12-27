@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { api, DonghuaCard as DonghuaCardType } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { LoadingGrid, LoadingSkeleton } from '@/components/LoadingSkeleton';
@@ -70,6 +71,11 @@ export default function GenreDetail() {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>{`Nonton Donghua Genre ${slug?.replace(/-/g, ' ')} Sub Indo`}</title>
+        <meta name="description" content={`Koleksi Donghua terbaik dengan genre ${slug?.replace(/-/g, ' ')} subtitle Indonesia.`} />
+        <link rel="canonical" href={`https://pinghua.qzz.io/genre/${slug}`} />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-8 capitalize">
           {slug?.replace(/-/g, ' ')} Donghua

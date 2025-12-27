@@ -100,13 +100,15 @@ export default function Episode() {
 
       <div className="min-h-screen pb-24 bg-background text-foreground">
 
-        <Helmet>
+                <Helmet>
 
-          <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
+                  <title>{`${episode.episode} ${episode.donghua_details?.title ? `- ${episode.donghua_details.title}` : ''} Sub Indo - PingHua`}</title>
 
-          <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
+                  <meta name="description" content={`Nonton ${episode.episode} ${episode.donghua_details?.title} Subtitle Indonesia gratis kualitas HD.`} />
 
-          <meta property="og:site_name" content="PingHua" />
+                  <link rel="canonical" href={`https://pinghua.qzz.io/episode/${slug}`} />
+
+                  <meta property="og:site_name" content="PingHua" />
 
           <meta property="og:title" content={`${episode.episode} Sub Indo - PingHua`} />
 

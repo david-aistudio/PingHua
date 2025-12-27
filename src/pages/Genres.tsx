@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Helmet } from 'react-helmet-async';
 import { api, Genre } from '@/lib/api';
 import { Button } from '@/components/ui/button';
 
@@ -25,6 +26,11 @@ export default function Genres() {
 
   return (
     <div className="min-h-screen">
+      <Helmet>
+        <title>Daftar Genre Donghua - PingHua</title>
+        <meta name="description" content="Jelajahi berbagai genre Donghua mulai dari Action, Cultivation, Romance, hingga Fantasy subtitle Indonesia." />
+        <link rel="canonical" href="https://pinghua.qzz.io/genres" />
+      </Helmet>
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-8">🎭 All Genres</h1>
 
