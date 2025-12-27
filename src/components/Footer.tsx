@@ -15,7 +15,7 @@ export const Footer = () => {
               Platform Nonton Donghua Subtitle Indonesia Terlengkap & Terupdate.
               Nikmati pengalaman streaming tanpa iklan yang mengganggu.
             </p>
-            <div className="pt-2">
+            <div className="pt-2" data-nosnippet>
               <a 
                 href="mailto:papengcepoko@gmail.com" 
                 className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
@@ -27,7 +27,7 @@ export const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-nosnippet>
             <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Navigation</h4>
             <ul className="space-y-2 text-sm">
               <li>
@@ -46,7 +46,7 @@ export const Footer = () => {
           </div>
 
           {/* Connect */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-nosnippet>
             <h4 className="text-sm font-bold uppercase tracking-wider text-muted-foreground">Connect</h4>
             <p className="text-sm text-muted-foreground">
               Follow development updates or contribute to the project.
@@ -63,7 +63,7 @@ export const Footer = () => {
           </div>
 
           {/* Disclaimer */}
-          <div className="space-y-4">
+          <div className="space-y-4" data-nosnippet>
             <h4 className="text-sm font-bold uppercase tracking-wider text-gray-500">Disclaimer</h4>
             <p className="text-xs text-gray-500 leading-relaxed">
               PingHua does not store any files on its server. All contents are provided by non-affiliated third parties.
