@@ -82,6 +82,27 @@ export default function Home() {
         {/* Continue Watching Section */}
         <ContinueWatching />
 
+        {/* Quick Genre Chips */}
+        <section>
+            <div className="flex gap-3 overflow-x-auto pb-4 scrollbar-hide">
+                {['Action', 'Cultivation', 'Martial Arts', 'Romance', 'Fantasy', 'Adventure', 'Magic', 'Comedy'].map((genre) => (
+                    <Link key={genre} to={`/genre/${genre.toLowerCase().replace(' ', '-')}`}>
+                        <Button 
+                            variant="outline" 
+                            className="rounded-full border-2 border-white/20 bg-background/50 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all duration-300 whitespace-nowrap px-6"
+                        >
+                            {genre}
+                        </Button>
+                    </Link>
+                ))}
+                <Link to="/genres">
+                    <Button variant="ghost" className="rounded-full text-muted-foreground hover:text-white border-2 border-transparent hover:border-white/20 whitespace-nowrap px-6">
+                        Lainnya
+                    </Button>
+                </Link>
+            </div>
+        </section>
+
         {/* Latest Release */}
         <section>
           <div className="flex items-center justify-between mb-6">

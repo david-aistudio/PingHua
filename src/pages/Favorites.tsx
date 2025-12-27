@@ -29,7 +29,7 @@ export default function Favorites() {
         </div>
 
         {list.length === 0 ? (
-          <div className="text-center py-20 bg-card/50 rounded-2xl border border-white/5">
+          <div className="text-center py-20 bg-card/50 rounded-2xl border border-white/20">
             <Heart className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
             <h3 className="text-xl font-bold mb-2">Belum ada Favorit</h3>
             <p className="text-muted-foreground mb-6">Kamu belum menyimpan donghua apapun.</p>

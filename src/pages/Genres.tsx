@@ -49,7 +49,7 @@ export default function Genres() {
               <Link key={index} to={`/genre/${genre.slug}`}>
                 <Button
                   variant="outline"
-                  className="rounded-full hover:bg-primary hover:text-primary-foreground transition-all"
+                  className="rounded-full border-white/20 hover:border-primary hover:text-primary hover:bg-primary/5 transition-all"
                 >
                   {genre.name}
                 </Button>

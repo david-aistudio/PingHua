@@ -46,7 +46,7 @@ export default function ByYear() {
               key={year}
               onClick={() => setSelectedYear(year)}
               variant={selectedYear === year ? 'default' : 'outline'}
-              className="rounded-full"
+              className={`rounded-full ${selectedYear !== year ? 'border-white/20 hover:border-primary hover:text-white' : ''}`}
             >
               {year}
             </Button>

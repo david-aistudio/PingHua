@@ -59,7 +59,7 @@ export default function Search() {
                 </div>
                 <Input
                     type="text"
-                    className="w-full pl-12 pr-4 h-14 rounded-full bg-secondary/50 border-transparent focus:border-primary focus:bg-background text-lg shadow-sm transition-all duration-300"
+                    className="w-full pl-12 pr-4 h-14 rounded-full bg-secondary/50 border border-white/10 focus:border-primary focus:bg-background text-lg shadow-sm transition-all duration-300"
                     placeholder="Search titles..."
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
@@ -104,7 +104,7 @@ export default function Search() {
                 {isLoading ? (
                     <LoadingGrid count={12} />
                 ) : results?.length === 0 ? (
-                    <div className="text-center py-20 bg-card/50 rounded-2xl border border-white/5">
+                    <div className="text-center py-20 bg-card/50 rounded-2xl border border-white/20">
                         <SearchIcon className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
                         <h3 className="text-xl font-bold mb-2">No results found</h3>
                         <p className="text-muted-foreground">Try adjusting your search terms</p>

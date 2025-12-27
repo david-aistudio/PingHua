@@ -40,7 +40,7 @@ export const ContinueWatching = () => {
           <Link 
             key={item.slug} 
             to={`/episode/${item.episodeSlug}`}
-            className="group relative flex items-center gap-4 p-3 rounded-xl bg-card border border-white/5 hover:border-primary/50 transition-all duration-300 overflow-hidden"
+            className="group relative flex items-center gap-4 p-3 rounded-xl bg-card border border-white/20 hover:border-primary transition-all duration-300 overflow-hidden"
           >
             {/* Background Blur Effect */}
             <div 

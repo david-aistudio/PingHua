@@ -55,7 +55,7 @@ export default function History() {
         </div>
 
         {list.length === 0 ? (
-          <div className="text-center py-20 bg-card/50 rounded-2xl border border-white/5">
+          <div className="text-center py-20 bg-card/50 rounded-2xl border border-white/20">
             <Clock className="w-16 h-16 mx-auto mb-4 text-muted-foreground/30" />
             <h3 className="text-xl font-bold mb-2">Belum ada riwayat</h3>
             <p className="text-muted-foreground mb-6">Mulai nonton donghua sekarang biar riwayatnya muncul di sini.</p>

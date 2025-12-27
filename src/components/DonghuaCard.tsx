@@ -16,7 +16,7 @@ export const DonghuaCard = ({ donghua, isHistory = false }: DonghuaCardProps) =>
 
   return (
     <Link to={targetUrl} className="group outline-none">
-      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-card border border-white/5 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 hover:-translate-y-1">
+      <div className="relative aspect-[2/3] w-full overflow-hidden rounded-xl bg-card border border-white/20 transition-all duration-500 hover:shadow-2xl hover:shadow-white/5 hover:-translate-y-1">
         
         {/* Poster Image */}
         <img

@@ -167,10 +167,10 @@ export default function Episode() {
             <div className="flex flex-wrap gap-4 items-center">
               {/* Server Selector - STRICT Integrity */}
               <Select value={selectedServer} onValueChange={setSelectedServer}>
-                <SelectTrigger className="w-[200px]">
+                <SelectTrigger className="w-[200px] border-white/20">
                   <SelectValue placeholder="Pilih Server" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-white/20">
                   {displayServers.length > 0 ? (
                     displayServers.map((s, i) => {
                       let displayName = s.name;
@@ -191,6 +191,7 @@ export default function Episode() {
               <Button
                 variant="secondary"
                 size="icon"
+                className="border border-white/20 hover:border-primary transition-all"
                 onClick={() => {
                   const shareData = {
                     title: `Nonton ${episode.donghua_details?.title || 'Donghua'} ${episode.episode}`,
@@ -212,13 +213,13 @@ export default function Episode() {
 
           {/* Nav Buttons */}
           <div className="flex gap-2">
-            <Button onClick={() => prevEpisode && navigate(`/episode/${prevEpisode.slug}`)} disabled={!prevEpisode}>Prev</Button>
-            <Button onClick={() => nextEpisode && navigate(`/episode/${nextEpisode.slug}`)} disabled={!nextEpisode}>Next</Button>
+            <Button className="border border-white/20 hover:border-primary" variant="outline" onClick={() => prevEpisode && navigate(`/episode/${prevEpisode.slug}`)} disabled={!prevEpisode}>Prev</Button>
+            <Button className="border border-white/20 hover:border-primary" variant="outline" onClick={() => nextEpisode && navigate(`/episode/${nextEpisode.slug}`)} disabled={!nextEpisode}>Next</Button>
           </div>
         </div>
 
         <Link to={`/detail/${donghuaSlug}`}>
-          <Button variant="outline">Kembali ke Detail</Button>
+          <Button variant="outline" className="border-white/20 hover:border-primary hover:text-white transition-all">Kembali ke Detail</Button>
         </Link>
 
         {/* EPISODE LIST SECTION */}
@@ -235,8 +236,8 @@ export default function Episode() {
                   <Link key={index} to={`/episode/${ep.slug}`}>
                     <Button
                       variant={isCurrent ? "default" : "outline"}
-                      className={`w-full h-10 text-xs font-medium transition-all ${
-                        isCurrent ? 'shadow-lg shadow-primary/20 scale-105' : 'text-muted-foreground'
+                      className={`w-full h-10 text-xs font-medium transition-all border-white/20 ${
+                        isCurrent ? 'shadow-lg shadow-primary/20 scale-105 border-primary' : 'text-muted-foreground hover:border-white/40 hover:text-white'
                       }`}
                     >
                       {episode.episodes_list!.length - index}
