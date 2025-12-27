@@ -17,11 +17,11 @@ export const Footer = () => {
             </p>
             <div className="pt-2" data-nosnippet>
               <a 
-                href="mailto:papengcepoko@gmail.com" 
+                href="mailto:admin@pinghua.qzz.io" 
                 className="flex items-center gap-2 text-sm font-medium text-foreground hover:text-primary transition-colors"
               >
                 <Mail className="w-4 h-4" />
-                papengcepoko@gmail.com
+                admin@pinghua.qzz.io
               </a>
             </div>
           </div>
