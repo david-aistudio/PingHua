@@ -1,10 +1,11 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { Play, Calendar, Clock, Star } from 'lucide-react';
+import { Play, Calendar, Clock, Star, Share2, Heart } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
 import { toast } from 'sonner';
 import { api, DonghuaDetail } from '@/lib/api';
+import { favorites } from '@/lib/favorites';
 import { Button } from '@/components/ui/button';
 import { LoadingSkeleton } from '@/components/LoadingSkeleton';
 
@@ -12,7 +13,35 @@ export default function Detail() {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
   const [visibleEpisodes, setVisibleEpisodes] = useState(20);
+  const [isFavorite, setIsFavorite] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
+
+  // Check favorite status on mount
+  useEffect(() => {
+    if (slug) {
+      setIsFavorite(favorites.has(slug));
+    }
+  }, [slug]);
+
+  const toggleFavorite = () => {
+    if (!donghua || !slug) return;
+
+    if (isFavorite) {
+      favorites.remove(slug);
+      setIsFavorite(false);
+      toast.success('Dihapus dari Favorit');
+    } else {
+      favorites.add({
+        slug: slug,
+        title: donghua.title,
+        poster: donghua.poster,
+        status: donghua.status,
+        url: `/detail/${slug}`
+      });
+      setIsFavorite(true);
+      toast.success('Ditambahkan ke Favorit');
+    }
+  };
 
   useEffect(() => {
     // Check if slug looks like an episode slug (contains "episode-")
@@ -173,15 +202,50 @@ export default function Detail() {
               )}
             </div>
 
-            {/* Watch Button */}
-            {donghua.episodes_list && donghua.episodes_list.length > 0 && (
-              <Link to={`/episode/${donghua.episodes_list[0].slug}`}>
-                <Button size="lg" className="w-full md:w-auto">
-                  <Play className="mr-2 h-5 w-5" />
-                  Watch Now
-                </Button>
-              </Link>
-            )}
+            {/* Watch & Share Buttons */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              {donghua.episodes_list && donghua.episodes_list.length > 0 && (
+                <Link to={`/episode/${donghua.episodes_list[0].slug}`} className="flex-1 sm:flex-none">
+                  <Button size="lg" className="w-full">
+                    <Play className="mr-2 h-5 w-5" />
+                    Mulai Nonton
+                  </Button>
+                </Link>
+              )}
+              
+              <Button 
+                size="lg" 
+                variant="outline" 
+                className="w-full sm:w-auto"
+                onClick={() => {
+                  const shareData = {
+                    title: `Nonton ${donghua.title} Sub Indo`,
+                    text: `Nonton Donghua ${donghua.title} Subtitle Indonesia Gratis di PingHua!`,
+                    url: window.location.href,
+                  };
+
+                  if (navigator.share) {
+                    navigator.share(shareData).catch((err) => console.log('Error sharing:', err));
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success('Link berhasil disalin!');
+                  }
+                }}
+              >
+                <Share2 className="mr-2 h-5 w-5" />
+                Share
+              </Button>
+
+              <Button
+                size="lg"
+                variant={isFavorite ? "default" : "outline"}
+                className={`w-full sm:w-auto ${isFavorite ? "bg-red-600 hover:bg-red-700 text-white border-red-600" : ""}`}
+                onClick={toggleFavorite}
+              >
+                <Heart className={`mr-2 h-5 w-5 ${isFavorite ? "fill-current" : ""}`} />
+                {isFavorite ? 'Saved' : 'Save'}
+              </Button>
+            </div>
 
             {/* Meta Info */}
             <div className="flex flex-wrap gap-4 text-sm">

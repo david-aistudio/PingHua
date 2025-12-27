@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, PlayCircle, CheckCircle, Grid, Menu, X } from 'lucide-react';
+import { Home, Search, PlayCircle, CheckCircle, Grid, Menu, X, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
@@ -12,7 +12,7 @@ export const Navbar = () => {
     { path: '/', icon: Home, label: 'Home' },
     { path: '/ongoing', icon: PlayCircle, label: 'Ongoing' },
     { path: '/search', icon: Search, label: 'Search' },
-    { path: '/completed', icon: CheckCircle, label: 'Done' },
+    { path: '/favorites', icon: Heart, label: 'Saved' },
     { path: '/genres', icon: Grid, label: 'Genres' },
   ];
 

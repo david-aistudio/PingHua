@@ -15,6 +15,7 @@ import GenreDetail from "./pages/GenreDetail";
 import ByYear from "./pages/ByYear";
 import Detail from "./pages/Detail";
 import Episode from "./pages/Episode";
+import Favorites from "./pages/Favorites";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ const App = () => {
                   <Route path="/genres" element={<Genres />} />
                   <Route path="/genre/:slug" element={<GenreDetail />} />
                   <Route path="/by-year" element={<ByYear />} />
+                  <Route path="/favorites" element={<Favorites />} />
                   <Route path="/detail/:slug" element={<Detail />} />
                   <Route path="/episode/:slug" element={<Episode />} />
                   <Route path="*" element={<NotFound />} />

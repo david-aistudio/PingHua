@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Home } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Home, Share2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Helmet } from 'react-helmet-async';
+import { toast } from 'sonner';
 import { api } from '@/lib/api';
 import { history } from '@/lib/history';
 import { Button } from '@/components/ui/button';
@@ -162,49 +163,50 @@ export default function Episode() {
 
           
 
-          <div className="flex flex-wrap gap-4 mb-8">
+          <div className="flex flex-wrap gap-4 mb-8 items-center justify-between">
+            <div className="flex flex-wrap gap-4 items-center">
+              {/* Server Selector - STRICT Integrity */}
+              <Select value={selectedServer} onValueChange={setSelectedServer}>
+                <SelectTrigger className="w-[200px]">
+                  <SelectValue placeholder="Pilih Server" />
+                </SelectTrigger>
+                <SelectContent>
+                  {displayServers.length > 0 ? (
+                    displayServers.map((s, i) => {
+                      let displayName = s.name;
+                      if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-1 (Clean)';
+                      if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-2 (Fast)';
+                      
+                      return (
+                        <SelectItem key={i} value={s.url}>{displayName}</SelectItem>
+                      );
+                    })
+                  ) : (
+                    <SelectItem value={selectedServer}>Server Backup</SelectItem>
+                  )}
+                </SelectContent>
+              </Select>
 
-            {/* Server Selector - STRICT Integrity */}
-
-            <Select value={selectedServer} onValueChange={setSelectedServer}>
-
-              <SelectTrigger className="w-[200px]">
-
-                <SelectValue placeholder="Pilih Server" />
-
-              </SelectTrigger>
-
-              <SelectContent>
-
-                {displayServers.length > 0 ? (
-
-                  displayServers.map((s, i) => {
-
-                    let displayName = s.name;
-
-                    if (s.name.toLowerCase().includes('rumble')) displayName = 'Free-1 (Clean)';
-
-                    if (s.name.toLowerCase().includes('ok.ru')) displayName = 'Free-2 (Fast)';
-
-                    
-
-                    return (
-
-                      <SelectItem key={i} value={s.url}>{displayName}</SelectItem>
-
-                    );
-
-                  })
-
-                ) : (
-
-                  <SelectItem value={selectedServer}>Server Backup</SelectItem>
-
-                )}
-
-              </SelectContent>
-
-            </Select>
+              {/* Share Button */}
+              <Button
+                variant="secondary"
+                size="icon"
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({
+                      title: document.title,
+                      text: `Nonton ${episode.episode} Sub Indo Gratis!`,
+                      url: window.location.href,
+                    });
+                  } else {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success('Link episode disalin!');
+                  }
+                }}
+              >
+                <Share2 className="h-4 w-4" />
+              </Button>
+            </div>
 
           {/* Nav Buttons */}
           <div className="flex gap-2">
