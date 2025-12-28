@@ -11,59 +11,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Path is required' });
   }
 
+  // Path pembersihan biar gak double slash
+  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
+  const sankaUrl = `${SANKA_BASE_URL}/${cleanPath}`;
+
   try {
-    const client = await clientPromise;
-    const db = client.db('pinghua');
-    const collection = db.collection('api_cache');
-
-    // 1. Cek di Cache MongoDB
-    const cachedData = await collection.findOne({ path });
-
-    // Tentukan waktu kadaluarsa (TTL)
-    // Home/Ongoing/Search: 15 menit
-    // Detail/Episode/Genres: 7 hari (karena jarang berubah)
-    let ttl = 1000 * 60 * 15; // default 15 menit
-    if (path.includes('/detail/') || path.includes('/episode/') || path.includes('/genres')) {
-        ttl = 1000 * 60 * 60 * 24 * 7; // 7 hari
-    }
-
-    const now = Date.now();
-
-    if (cachedData && (now - cachedData.timestamp < ttl)) {
-      console.log(`[Cache Hit] Serving from MongoDB: ${path}`);
-      return res.status(200).json(cachedData.data);
-    }
-
-    // 2. Kalau Gak Ada atau Kadaluarsa, Fetch dari Sanka
-    console.log(`[Cache Miss] Fetching from Sanka: ${path}`);
-    const sankaUrl = `${SANKA_BASE_URL}/${path}`;
+    // 1. Coba nembak Sanka dulu (Biar Real-time sesuai mau lu)
+    console.log(`[Proxy] Fetching REALTIME from Sanka: ${cleanPath}`);
     
-    try {
-        const response = await axios.get(sankaUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' }
-        });
+    const sankaRes = await axios.get(sankaUrl, {
+        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36' },
+        timeout: 5000 // 5 detik aja biar gak kelamaan nunggu kalau Sanka lemot
+    });
 
-        const data = response.data;
+    const data = sankaRes.data;
 
-        // 3. Simpan/Update ke MongoDB
-        await collection.updateOne(
-            { path },
-            { $set: { data, timestamp: now } },
+    // 2. Simpan/Update ke MongoDB di belakang layar (Async)
+    // Kita gak pake 'await' biar user gak nungguin MongoDB kelar save
+    clientPromise.then(async (client) => {
+        const db = client.db('pinghua');
+        await db.collection('api_cache').updateOne(
+            { path: cleanPath },
+            { $set: { data, timestamp: Date.now() } },
             { upsert: true }
         );
+        console.log(`[Cache] Updated MongoDB for: ${cleanPath}`);
+    }).catch(err => console.error('[Cache Error] MongoDB update failed:', err.message));
 
-        return res.status(200).json(data);
-    } catch (fetchError: any) {
-        // Kalau Sanka Error (Limit/Down), tapi kita punya data lama di Cache, kasih aja data lama
+    return res.status(200).json(data);
+
+  } catch (sankaError: any) {
+    console.error(`[Sanka Error] ${sankaError.message}. Trying MongoDB Fallback...`);
+
+    // 3. JALUR DARURAT: Kalau Sanka Limit/Error, ambil dari MongoDB
+    try {
+        const client = await clientPromise;
+        const db = client.db('pinghua');
+        const cachedData = await db.collection('api_cache').findOne({ path: cleanPath });
+
         if (cachedData) {
-            console.log(`[Sanka Error] Serving STALE data for: ${path}`);
+            console.log(`[Fallback] Serving cached data for: ${cleanPath}`);
             return res.status(200).json(cachedData.data);
         }
-        return res.status(fetchError.response?.status || 500).json({ error: 'Sanka API Error' });
+    } catch (mongoError: any) {
+        console.error('[Fatal] MongoDB also failed:', mongoError.message);
     }
 
-  } catch (error: any) {
-    console.error('Proxy Error:', error);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    return res.status(500).json({ error: 'All data sources failed' });
   }
 }
