@@ -1,110 +1,85 @@
-# 🏮 PingHua (平画)
+# 🐉 PINGHUA - Gerbang Kultivasi Donghua Terbesar
 
 <div align="center">
-
-  <h1 align="center">PingHua Web Platform</h1>
-
+  <img src="https://pinghua.qzz.io/logo.png" width="200" alt="PingHua Logo" />
   <p align="center">
-    <strong>Platform Streaming Donghua Subtitle Indonesia Premium</strong>
-    <br />
-    <em>Cinematic Experience • No Ads • Ultra Fast</em>
+    <strong>Platform Nonton Donghua Subtitle Indonesia Terlengkap, Tercepat, dan Tanpa Iklan.</strong>
   </p>
 
   <p align="center">
-    <img src="https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black" alt="React" />
-    <img src="https://img.shields.io/badge/Vite-Lighting_Fast-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
-    <img src="https://img.shields.io/badge/TypeScript-Strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
-    <img src="https://img.shields.io/badge/Tailwind_CSS-Modern-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind" />
-    <img src="https://img.shields.io/badge/Shadcn_UI-Components-000000?style=for-the-badge&logo=shadcnui&logoColor=white" alt="Shadcn" />
-  </p>
-
-  <p align="center">
-    <a href="#-fitur-unggulan">Fitur</a> •
-    <a href="#-teknologi">Teknologi</a> •
-    <a href="#-instalasi">Instalasi</a> •
-    <a href="#-lisensi">Lisensi</a>
+    <img src="https://img.shields.io/badge/Status-Live-success?style=for-the-badge&logo=vercel" alt="Status" />
+    <img src="https://img.shields.io/badge/SEO-Rank_1-gold?style=for-the-badge&logo=google" alt="SEO" />
+    <img src="https://img.shields.io/badge/UX-Premium-blue?style=for-the-badge&logo=apple" alt="UX" />
   </p>
 </div>
 
 ---
 
-## 📖 Deskripsi
+## ✨ Mahakarya Teknologi (Tech Stack)
 
-**PingHua** adalah aplikasi web modern yang didedikasikan untuk penggemar animasi China (Donghua). Dibangun dengan fokus pada **User Experience (UX)**, PingHua menghadirkan antarmuka yang bersih, gelap (Dark Mode), dan bebas gangguan.
+Sekte PingHua dibangun menggunakan teknik kultivasi tingkat tinggi:
 
-Tidak seperti situs streaming biasa, PingHua mengadopsi gaya desain **"App-Like"** dengan navigasi melayang, transisi sinematik, dan mode teater yang imersif.
-
-## ✨ Fitur Unggulan
-
-### 🎬 Visual & Experience
-- **Cinematic Hero Carousel:** Slide poster ukuran penuh dengan transisi *hybrid motion* yang halus.
-- **Floating Dock Navigation:** Menu navigasi kapsul melayang ala iOS/MacOS yang responsif dan dapat disembunyikan.
-- **Theater Mode:** Pemutar video *edge-to-edge* dengan latar belakang gelap pekat untuk fokus maksimal.
-- **True Dark UI:** Palet warna *Pure Black* (#000000) yang elegan dan hemat baterai untuk layar OLED.
-
-### ⚡ Performa & Fungsionalitas
-- **Smart Search:** Pencarian instan dengan *debouncing* dan rekomendasi trending.
-- **Auto History:** Jangan khawatir lupa episode terakhir! Sistem otomatis menyimpan progres tontonan Anda.
-- **Client-Side Fetching:** Arsitektur yang dioptimalkan untuk mengurangi beban server dan menghindari limit API.
-- **Server Selection:** Pilihan multi-server streaming untuk koneksi terbaik.
-
-## 🛠️ Teknologi
-
-Project ini direkayasa menggunakan stack teknologi web terkini:
-
-| Kategori | Teknologi |
-|----------|-----------|
-| **Core** | React 18, TypeScript |
-| **Build Tool** | Vite (SWC) |
-| **Styling** | Tailwind CSS, Lucide Icons |
-| **UI Library** | Shadcn/ui, Radix UI |
-| **State/Data** | TanStack Query v5 |
-| **Routing** | React Router DOM v6 |
-| **Animation** | CSS Transition & Transform |
-
-## 🚀 Instalasi
-
-Ingin menjalankan project ini di komputer lokal Anda? Ikuti langkah mudah ini:
-
-1.  **Clone Repository**
-    ```bash
-    git clone https://github.com/david-aistudio/pinghua.git
-    cd pinghua
-    ```
-
-2.  **Install Dependencies**
-    ```bash
-    npm install
-    ```
-
-3.  **Jalankan Server Development**
-    ```bash
-    npm run dev
-    ```
-
-4.  Buka browser dan akses `http://localhost:8080`.
-
-## 🏷️ Topik
-
-`react` `typescript` `vite` `streaming` `donghua` `anime` `web-app` `clean-ui` `dark-mode` `cinematic` `entertainment`
-
-## 📄 Lisensi
-
-**Proprietary / Commercial Software.**
-
-Software ini dilindungi hak cipta. Penggunaan hanya diizinkan untuk keperluan **Personal & Edukasi (Local Run)**. Dilarang keras mendistribusikan ulang, memodifikasi, atau menggunakan untuk keperluan komersial tanpa izin tertulis dari pemilik (**David**).
-
-Lihat `LICENSE` untuk detail lengkap.
+- ⚛️ **React 18** (Pondasi Utama)
+- ⚡ **Vite** (Pedang Tercepat)
+- 🎨 **Tailwind CSS** (Jubah Estetik)
+- 🛡️ **Supabase** (Gudang Data Abadi)
+- 📈 **TanStack Query** (Aliran Qi Data)
+- 📱 **PWA** (Aplikasi dalam Genggaman)
 
 ---
 
-*Last Updated: 2025*
+## 🏆 Fitur Unggulan Sekte
 
+| Fitur | Deskripsi |
+| :--- | :--- |
+| **🚀 Ultra Speed** | Loading tanpa hambatan berkat optimasi SPA + Vite. |
+| **🎬 Cinematic Carousel** | Pengalaman visual mewah 10 detik dengan transisi smooth. |
+| **💬 Diskusi Sekte** | Komentar anonim dengan sistem Reply & Like interaktif. |
+| **❤️ Aula Pusaka** | Simpan donghua kesayanganmu ke daftar favorit (Bookmark). |
+| **🕒 Lanjut Kultivasi** | Fitur 'Lanjut Tonton' yang cerdas menyisir riwayat terakhir. |
+| **🔍 Sitelinks Search** | Terintegrasi langsung dengan kotak pencarian Google. |
+| **🚫 Segel Iklan** | Pengalaman menonton suci tanpa gangguan iklan sampah. |
+
+---
+
+## 📈 Capaian SEO (Anak Emas Google)
+
+PingHua didesain untuk mendominasi ranah pencarian:
+- [x] **Full Schema.org Integration** (TVSeries, VideoObject, Breadcrumbs).
+- [x] **Dynamic Metadata** untuk setiap Episode & Detail.
+- [x] **Sitemap Elite** mencakup 300+ halaman harta karun.
+- [x] **Sub-domain Authority** yang terus meningkat.
+
+---
+
+## 🛠️ Membangun Replika (Installation)
+
+Mau membangun sekte lu sendiri? Ikuti mantra ini:
+
+```bash
+# 1. Kloning Pusaka
+git clone https://github.com/david-aistudio/PingHua.git
+
+# 2. Masuki Aliran Data
+cd PingHua
+
+# 3. Ritual Install
+npm install
+
+# 4. Aktifkan Energi
+npm run dev
+```
+
+---
+
+## 📜 Legalitas & Disclaimer
+PingHua tidak menyimpan file di server sendiri. Semua konten disediakan oleh pihak ketiga. Projek ini dibangun untuk edukasi dan hiburan para kultivator di seluruh nusantara.
+
+---
 
 <div align="center">
-  <p>Dibuat dengan ❤️ dan ☕ oleh <strong>David</strong></p>
-  <p>
-    <a href="https://github.com/david-aistudio">GitHub</a> •
-    <a href="mailto:papengcepoko@gmail.com">Email</a>
-  </p>
+  <p>Dibuat dengan ❤️ oleh <strong>David (The Grandmaster)</strong></p>
+  <a href="https://github.com/david-aistudio">
+    <img src="https://img.shields.io/github/followers/david-aistudio?label=Follow%20Master&style=social" alt="Follow Master" />
+  </a>
 </div>
