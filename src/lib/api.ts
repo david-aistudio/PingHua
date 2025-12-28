@@ -1,4 +1,5 @@
-const BASE_URL = 'https://www.sankavollerei.com';
+// BASE_URL is now our local proxy to MongoDB + Sanka
+const BASE_URL = '/api/proxy?path=';
 
 export interface DonghuaCard {
   title: string;
