@@ -1,6 +1,6 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import axios from 'axios';
-import clientPromise from './lib/mongodb';
+import clientPromise from './lib/mongodb.js';
 
 const SANKA_BASE_URL = 'https://www.sankavollerei.com';
 
