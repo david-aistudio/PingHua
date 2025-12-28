@@ -9,6 +9,7 @@
     <meta name="application-name" content="PingHua" />
     <meta property="og:site_name" content="PingHua" />
     <meta name="description" content="PingHua adalah platform streaming Donghua subtitle Indonesia terlengkap dan terupdate. Nonton gratis kualitas HD dengan tampilan modern dan tanpa iklan.">
+    <meta name="keywords" content="donghua sub indo, nonton donghua, streaming donghua, donghua 3d, donghua subtitle indonesia, donghua terbaru, donghua tamat, donghua ongoing, martial arts donghua, cultivation donghua, reinkarnasi donghua, xianxia, xuanhuan, swallowed star sub indo, soul land sub indo, battle through the heavens sub indo, perfect world donghua, throne of seal sub indo, donghua gratis, nonton donghua tanpa iklan">
     <meta name="theme-color" content="#000000">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -21,12 +22,20 @@
         "@context": "https://schema.org",
         "@type": "WebSite",
         "name": "PingHua",
-        "url": "https://pinghua.qzz.io/"
+        "alternateName": ["PingHua Donghua", "Nonton Donghua Sub Indo", "Streaming Donghua 3D"],
+        "url": "https://pinghua.qzz.io/",
+        "potentialAction": {
+          "@type": "SearchAction",
+          "target": "https://pinghua.qzz.io/search/{search_term_string}",
+          "query-input": "required name=search_term_string"
+        }
       }
     </script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+    <script>eruda.init();</script>
   </head>
   <body>
     <div id="root"></div>

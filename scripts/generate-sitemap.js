@@ -30,6 +30,12 @@ async function generateSitemap() {
     '/by-year',
   ];
 
+  // Add Year Routes (Last 6 years)
+  const currentYear = new Date().getFullYear();
+  for (let year = currentYear; year >= currentYear - 5; year--) {
+    staticPages.push(`/by-year?year=${year}`);
+  }
+
   // 2. Fetch Dynamic Content
   console.log('⏳ Fetching dynamic data...');
   

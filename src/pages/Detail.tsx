@@ -113,6 +113,50 @@ export default function Detail() {
         <meta name="description" content={`Streaming ${donghua.title} Subtitle Indonesia kualitas HD gratis tanpa iklan.`} />
         <link rel="canonical" href={`https://pinghua.qzz.io/detail/${slug}`} />
         <meta property="og:image" content={donghua.poster} />
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "TVSeries",
+            "name": donghua.title,
+            "alternativeHeadline": donghua.alter_title,
+            "image": donghua.poster,
+            "description": donghua.synopsis?.slice(0, 200),
+            "genre": donghua.genres?.map(g => g.name),
+            "numberOfEpisodes": donghua.episodes_count,
+            "status": donghua.status,
+            "author": {
+              "@type": "Organization",
+              "name": "PingHua",
+              "url": "https://pinghua.qzz.io/"
+            },
+            "aggregateRating": donghua.rating ? {
+              "@type": "AggregateRating",
+              "ratingValue": donghua.rating,
+              "bestRating": "10",
+              "ratingCount": "100"
+            } : undefined
+          })}
+        </script>
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            "itemListElement": [
+              {
+                "@type": "ListItem",
+                "position": 1,
+                "name": "Home",
+                "item": "https://pinghua.qzz.io/"
+              },
+              {
+                "@type": "ListItem",
+                "position": 2,
+                "name": donghua.title,
+                "item": `https://pinghua.qzz.io/detail/${slug}`
+              }
+            ]
+          })}
+        </script>
       </Helmet>
 
       {/* Elegant Hero Section */}

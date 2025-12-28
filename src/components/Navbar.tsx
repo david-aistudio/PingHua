@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Search, PlayCircle, CheckCircle, Grid, Menu, X, Heart } from 'lucide-react';
+import { Home, Search, PlayCircle, Grid, Menu, X, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 export const Navbar = () => {
   const location = useLocation();
-  const [isOpen, setIsOpen] = useState(false); // Default closed
+  const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
     { path: '/', icon: Home, label: 'Home' },
@@ -22,8 +22,8 @@ export const Navbar = () => {
       {/* Expandable Nav Items */}
       <nav 
         className={cn(
-          "bg-black/75 backdrop-blur-2xl border border-white/20 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-1 md:gap-4 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.32,0.72,0,1)]",
-          isOpen ? "w-[320px] md:w-[400px] px-2 py-2 opacity-100 translate-y-0" : "w-0 px-0 opacity-0 translate-y-10"
+          "bg-black/75 backdrop-blur-2xl border border-white/20 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-1 px-2 py-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          isOpen ? "w-[320px] md:w-[400px] opacity-100 translate-y-0" : "w-0 px-0 opacity-0 translate-y-10"
         )}
       >
         <div className="flex w-full justify-between items-center min-w-max">
@@ -55,7 +55,7 @@ export const Navbar = () => {
       <Button
         size="icon"
         className={cn(
-            "h-14 w-14 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-110 active:scale-90 border",
+            "h-14 w-14 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-110 active:scale-90 border-2",
             isOpen 
               ? "bg-white text-black border-white hover:bg-white/90" 
               : "bg-black/75 backdrop-blur-2xl text-white border-white/20 hover:bg-black"

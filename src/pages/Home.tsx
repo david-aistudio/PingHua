@@ -61,6 +61,7 @@ export default function Home() {
       <Helmet>
         <title>PingHua - Nonton Donghua Sub Indo Terlengkap (Gratis, HD & Tanpa Iklan)</title>
         <meta name="description" content="PingHua adalah platform streaming Donghua (animasi China) subtitle Indonesia terlengkap dan terupdate. Nonton gratis kualitas HD tanpa iklan mengganggu." />
+        <meta name="keywords" content="donghua sub indo, nonton donghua terbaru, streaming donghua 3d, donghua hd gratis, donghua tanpa iklan, sanke vollerei, donghua tv, donghua 3d china sub indo, martial arts, cultivation donghua" />
         <link rel="canonical" href="https://pinghua.qzz.io/" />
         <meta property="og:site_name" content="PingHua" />
         <meta property="og:title" content="PingHua - Nonton Donghua Sub Indo Gratis Terbaru" />
