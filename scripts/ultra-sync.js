@@ -8,12 +8,11 @@ const SANKA_BASE_URL = 'https://www.sankavollerei.com';
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 const axiosConfig = {
     headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
-    timeout: 10000
+    timeout: 15000
 };
 
 async function processEpisodes(episodes) {
-    // KITA HAJAR 15 EPISODE SEKALIGUS (MAX SPEED)
-    const batchSize = 15;
+    const batchSize = 10;
     for (let i = 0; i < episodes.length; i += batchSize) {
         const batch = episodes.slice(i, i + batchSize);
         await Promise.all(batch.map(async (ep) => {
@@ -31,8 +30,7 @@ async function processEpisodes(episodes) {
 }
 
 async function sync() {
-    console.log('⚡ ULTRA-SYNC MONSTER MODE STARTING...');
-    // Kita cek 3 halaman home (Latest Updates)
+    console.log('⚡ ULTRA-SYNC SMART MODE ACTIVATED...');
     for (let page = 1; page <= 3; page++) {
         console.log(`\n📄 Checking Home Page ${page}...`);
         try {
@@ -40,21 +38,27 @@ async function sync() {
             const latest = res.data.latest_release || [];
             
             for (const item of latest) {
-                const slug = item.slug.replace(/^\/|\/$/g, '');
-                const detailPath = `anime/donghua/detail/${slug}`;
+                // Trik: Kita ambil slug series-nya dari href detail, bukan slug episode
+                const rawSlug = item.href ? item.href.replace('/donghua/detail/', '').replace(/^\/|\/$/g, '') : null;
+                if (!rawSlug) { process.stdout.write('?'); continue; }
+
+                const detailPath = `anime/donghua/detail/${rawSlug}`;
+                process.stdout.write(`\n🔍 ${item.title.substring(0, 15)}.. `);
                 
-                process.stdout.write(`\n🔍 ${item.title.substring(0, 20)}: `);
-                
+                let detailData;
                 const { data: cached } = await supabase.from('api_cache').select('data').eq('path', detailPath).single();
-                let detailData = cached?.data;
                 
-                if (!detailData) {
+                if (!cached) {
                     try {
                         const dRes = await axios.get(`${SANKA_BASE_URL}/${detailPath}`, axiosConfig);
                         detailData = dRes.data;
                         await supabase.from('api_cache').upsert({ path: detailPath, data: detailData, timestamp: Date.now() });
-                    } catch (e) { process.stdout.write('⚠️'); continue; }
-                } else { process.stdout.write('(Cache) '); }
+                        process.stdout.write('(+) ');
+                    } catch (e) { process.stdout.write('⚠️ '); continue; }
+                } else { 
+                    detailData = cached.data;
+                    process.stdout.write('(C) '); 
+                }
 
                 if (detailData?.episodes_list) {
                     await processEpisodes(detailData.episodes_list);
