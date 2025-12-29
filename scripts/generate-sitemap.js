@@ -1,24 +1,17 @@
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { createClient } from '@supabase/supabase-js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const BASE_URL = 'https://pinghua.qzz.io'; // Your production domain
-const API_URL = 'https://www.sankavollerei.com/anime/donghua';
+const BASE_URL = 'https://pinghua.qzz.io';
+const SUPABASE_URL = "https://spuwbbpzwsfkwhinueuq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwdXdiYnB6d3Nma3doaW51ZXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MTQ3MTcsImV4cCI6MjA4MjQ5MDcxN30.M_IjAGI94ETG5kE7zmt-Qyg-iN3Ru86DHCH7igqOMIw";
 
-async function fetchFromApi(endpoint) {
-  try {
-    const response = await fetch(`${API_URL}/${endpoint}`);
-    const data = await response.json();
-    return data;
-  } catch (error) {
-    console.error(`Error fetching ${endpoint}:`, error);
-    return null;
-  }
-}
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function generateSitemap() {
-  console.log('🗺️  Generating Sitemap...');
+  console.log('🗺️  Generating Sitemap from Supabase Cache...');
 
   // 1. Static Pages
   const staticPages = [
@@ -30,80 +23,45 @@ async function generateSitemap() {
     '/by-year',
   ];
 
-  // Add Year Routes (Last 6 years)
+  // Add Year Routes
   const currentYear = new Date().getFullYear();
-  for (let year = currentYear; year >= currentYear - 5; year--) {
+  for (let year = currentYear; year >= 2020; year--) {
     staticPages.push(`/by-year?year=${year}`);
   }
 
-  // 2. Fetch Dynamic Content
-  console.log('⏳ Fetching dynamic data...');
+  // 2. Fetch Slugs from Supabase
+  console.log('⏳ Fetching slugs from api_cache...');
   
-  // Fetch Genres
-  const genresData = await fetchFromApi('genres');
-  
-  // Helper to fetch multiple pages
-  const fetchPages = async (endpoint, maxPage) => {
-    const promises = [];
-    for (let i = 1; i <= maxPage; i++) {
-      promises.push(fetchFromApi(`${endpoint}/${i}`));
-    }
-    return Promise.all(promises);
-  };
+  // Ambil semua path yang mengandung 'detail/' (Halaman Donghua)
+  const { data: detailPages, error: err1 } = await supabase
+    .from('api_cache')
+    .select('path')
+    .like('path', '%detail/%');
 
-  // Fetch Home (Just page 1 is enough for latest)
-  const homeData = await fetchFromApi('home/1');
-  
-  // Fetch Ongoing (Deep crawl: 3 pages)
-  const ongoingPages = await fetchPages('ongoing', 3);
-  
-  // Fetch Completed (Deep crawl: 3 pages)
-  const completedPages = await fetchPages('completed', 3);
+  // Ambil semua path yang mengandung 'episode/' (Halaman Nonton)
+  const { data: episodePages, error: err2 } = await supabase
+    .from('api_cache')
+    .select('path')
+    .like('path', '%episode/%');
 
-  let dynamicUrls = [];
-
-  // Helper to add anime detail links
-  const addAnimeLinks = (list, priority = 0.8, changefreq = 'daily') => {
-    if (!list) return;
-    list.forEach(item => {
-      if (item.slug) {
-        const cleanSlug = item.slug.replace(/^\/|\/$/g, '');
-        dynamicUrls.push({ 
-          url: `/detail/${cleanSlug}`, 
-          priority, 
-          changefreq 
-        });
-      }
-    });
-  };
-
-  // Process Genres
-  if (genresData?.data) {
-    genresData.data.forEach(genre => {
-        dynamicUrls.push({ 
-            url: `/genre/${genre.slug}`, 
-            priority: 0.9, 
-            changefreq: 'weekly' 
-        });
-    });
+  if (err1 || err2) {
+    console.error('❌ Error fetching from Supabase:', err1 || err2);
+    return;
   }
 
-  // Process Home
-  if (homeData?.latest_release) addAnimeLinks(homeData.latest_release, 1.0, 'always'); // Latest is HOT
+  const dynamicUrls = [];
 
-  // Process Ongoing Pages
-  ongoingPages.forEach(page => {
-      if (page?.ongoing_donghua) addAnimeLinks(page.ongoing_donghua, 0.9, 'daily');
+  // Tambahkan link detail
+  detailPages?.forEach(item => {
+    const slug = item.path.replace('anime/donghua/detail/', '').replace(/^\/|\/$/g, '');
+    dynamicUrls.push({ url: `/detail/${slug}`, priority: 0.9, changefreq: 'weekly' });
   });
 
-  // Process Completed Pages
-  completedPages.forEach(page => {
-      if (page?.completed_donghua) addAnimeLinks(page.completed_donghua, 0.7, 'monthly');
+  // Tambahkan link episode (Opsional: Kalau mau Google index tiap episode)
+  episodePages?.forEach(item => {
+    const slug = item.path.replace('anime/donghua/episode/', '').replace(/^\/|\/$/g, '');
+    dynamicUrls.push({ url: `/episode/${slug}`, priority: 0.6, changefreq: 'monthly' });
   });
-
-  // Remove duplicates
-  const uniqueUrls = new Map();
-  dynamicUrls.forEach(item => uniqueUrls.set(item.url, item));
 
   // 3. Construct XML
   const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
@@ -116,8 +74,8 @@ async function generateSitemap() {
     <priority>1.0</priority>
   </url>`).join('')}
 
-  <!-- Dynamic Anime Pages (${uniqueUrls.size} items) -->
-  ${Array.from(uniqueUrls.values()).map(item => `
+  <!-- Dynamic Pages (${dynamicUrls.length} items) -->
+  ${dynamicUrls.map(item => `
   <url>
     <loc>${BASE_URL}${item.url}</loc>
     <changefreq>${item.changefreq}</changefreq>
@@ -127,14 +85,10 @@ async function generateSitemap() {
 
   // 4. Write to public/sitemap.xml
   const publicDir = path.resolve(__dirname, '..', 'public');
-  // Ensure public dir exists (it should in Vite project)
-  if (!fs.existsSync(publicDir)) {
-      console.error('❌ Public directory not found at:', publicDir);
-      return;
-  }
+  if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
   
   fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
-  console.log(`✅ Sitemap generated with ${staticPages.length + uniqueUrls.size} URLs!`);
+  console.log(`✅ Sitemap generated with ${staticPages.length + dynamicUrls.length} URLs!`);
 }
 
 generateSitemap();
