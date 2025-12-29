@@ -29,6 +29,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Kalau ada di cache, langsung kasih ke user (INSTAN!)
     if (cached) {
       console.log(`[Cache Hit] Fast delivery for: ${cleanPath}`);
+      // Tambah header biar browser simpan cache selama 5 menit
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
       res.status(200).json(cached.data);
 
       // JANGAN BERHENTI: Cek apakah perlu update dari Sanka di belakang layar (Background Sync)

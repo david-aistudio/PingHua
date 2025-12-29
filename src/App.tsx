@@ -19,7 +19,16 @@ import Favorites from "./pages/Favorites";
 import History from "./pages/History";
 import NotFound from "./pages/NotFound";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // Data dianggap segar selama 5 menit
+      gcTime: 1000 * 60 * 30,    // Simpan di memori selama 30 menit
+      retry: 1,
+      refetchOnWindowFocus: false, // Gak usah reload pas ganti tab
+    },
+  },
+});
 
 const App = () => {
   // Auto dark mode based on system preference
