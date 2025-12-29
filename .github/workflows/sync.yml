@@ -1,9 +1,9 @@
-name: Donghua Auto-Sync
+name: Donghua Auto-Sync (Turbo)
 
 on:
   schedule:
-    - cron: '*/30 * * * *' # Jalan tiap 30 menit
-  workflow_dispatch: # Biar bisa diklik manual di GitHub
+    - cron: '0 * * * *' # Jalan tiap 1 jam sekali (biar aman)
+  workflow_dispatch:
 
 jobs:
   sync:
@@ -20,8 +20,8 @@ jobs:
       - name: Install Dependencies
         run: npm install axios @supabase/supabase-js
 
-      - name: Run Ultra-Sync
-        run: node scripts/ultra-sync.js
+      - name: Run Turbo Warmup (Latest 5 Pages)
+        run: node scripts/bulk-warmup.js 5
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: https://spuwbbpzwsfkwhinueuq.supabase.co
+          VITE_SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwdXdiYnB6d3Nma3doaW51ZXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MTQ3MTcsImV4cCI6MjA4MjQ5MDcxN30.M_IjAGI94ETG5kE7zmt-Qyg-iN3Ru86DHCH7igqOMIw
