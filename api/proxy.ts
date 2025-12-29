@@ -15,40 +15,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Path is required' });
   }
 
-  // Bersihkan path biar konsisten (tanpa slash di depan/belakang)
   const cleanPath = path.replace(/^\/|\/$/g, '');
   const sankaUrl = `${SANKA_BASE_URL}/${cleanPath}`;
 
   try {
     // 1. Ambil dari Supabase (Prioritas Utama)
-    const { data: cached, error: pgError } = await supabase
+    const { data: cached } = await supabase
         .from('api_cache')
         .select('data, timestamp')
         .eq('path', cleanPath)
         .single();
 
     if (cached && cached.data) {
-      console.log(`[Proxy] Hit: ${cleanPath}`);
+      // Kasih header Cache biar browser user simpen juga
+      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
       res.status(200).json(cached.data);
 
       // Jalankan update di belakang layar jika sudah stale
       const now = Date.now();
-      let ttl = 1000 * 60 * 30; // 30 menit default
+      let ttl = 1000 * 60 * 30; // 30 menit
       if (cleanPath.includes('/detail/') || cleanPath.includes('/episode/')) ttl = 1000 * 60 * 60 * 24;
 
-      if (now - cached.timestamp > ttl) {
-        axios.get(sankaUrl, { 
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
-            timeout: 10000
-        }).then(sRes => {
-            supabase.from('api_cache').upsert({ path: cleanPath, data: sRes.data, timestamp: Date.now() }).then(() => {});
-        }).catch(() => {});
+      if (now - (cached.timestamp || 0) > ttl) {
+        // Pake async function mandiri biar TS gak komplain soal catch
+        (async () => {
+            try {
+                const sRes = await axios.get(sankaUrl, { 
+                    headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
+                    timeout: 10000
+                });
+                await supabase.from('api_cache').upsert({ path: cleanPath, data: sRes.data, timestamp: Date.now() });
+            } catch (e) {}
+        })();
       }
       return;
     }
 
-    // 2. Kalau Gak Ada di Cache, Paksa Ambil dari Sanka
-    console.log(`[Proxy] Miss: ${cleanPath}. Fetching Sanka...`);
+    // 2. Kalau Gak Ada di Cache, Ambil dari Sanka
     const sankaRes = await axios.get(sankaUrl, {
         headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
         timeout: 15000
@@ -56,19 +59,17 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const data = sankaRes.data;
 
-    // Simpan ke Supabase (Jangan di-await biar user cepet dapet data)
+    // Simpan ke Supabase tanpa nunggu (fire and forget)
     supabase.from('api_cache').upsert({
         path: cleanPath,
         data: data,
         timestamp: Date.now()
-    }).then(() => {}).catch(() => {});
+    }).then(() => {});
 
     return res.status(200).json(data);
 
   } catch (error: any) {
     console.error(`[Proxy Error] ${cleanPath}: ${error.message}`);
-    
-    // RETURN DATA AMAN: Jangan kasih 500, kasih object kosong biar React gak crash
     return res.status(200).json({
         status: "success",
         latest_release: [],
