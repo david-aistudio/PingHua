@@ -1,105 +1,88 @@
-import { MongoClient } from 'mongodb';
+import { createClient } from '@supabase/supabase-js';
 import axios from 'axios';
 
-const MONGODB_URI = "mongodb+srv://david:david2009@cluster0.6nydub7.mongodb.net/?appName=Cluster0";
+const SUPABASE_URL = "https://spuwbbpzwsfkwhinueuq.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNwdXdiYnB6d3Nma3doaW51ZXVxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjY5MTQ3MTcsImV4cCI6MjA4MjQ5MDcxN30.M_IjAGI94ETG5kE7zmt-Qyg-iN3Ru86DHCH7igqOMIw";
 const SANKA_BASE_URL = 'https://www.sankavollerei.com';
 
-const client = new MongoClient(MONGODB_URI);
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const axiosConfig = {
+    headers: { 
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'application/json',
+        'Referer': 'https://www.sankavollerei.com/'
+    },
+    timeout: 20000
+};
 
-async function warmup() {
-  try {
-    await client.connect();
-    console.log('🏛️ Connected to MongoDB Jakarta...');
-    const db = client.db('pinghua');
-    const collection = db.collection('api_cache');
-
-    const config = [
-      { section: 'ongoing', key: 'ongoing_donghua' },
-      { section: 'completed', key: 'completed_donghua' }
-    ];
-    
-    for (const conf of config) {
-      console.log(`
-📂 SEKSI: ${conf.section.toUpperCase()}`);
-      let page = 1;
-      let hasMore = true;
-
-      while (hasMore) {
-        console.log(`
-📄 Crawling ${conf.section} - Halaman ${page}...`);
-        const listUrl = `${SANKA_BASE_URL}/anime/donghua/${conf.section}/${page}`;
-        
-        try {
-          const res = await axios.get(listUrl);
-          const seriesList = res.data[conf.key] || [];
-
-          if (seriesList.length === 0) {
-            hasMore = false;
-            console.log(`✅ Selesai di ${conf.section}.`);
-            break;
-          }
-
-          for (const item of seriesList) {
-            const seriesSlug = item.slug.replace(/^\/|\/$/g, '');
-            const detailPath = `anime/donghua/detail/${seriesSlug}`;
-
-            console.log(`
-🔍 Memproses: ${item.title}`);
-
+async function processEpisodeBatch(episodes) {
+    const batchSize = 6; 
+    for (let i = 0; i < episodes.length; i += batchSize) {
+        const batch = episodes.slice(i, i + batchSize);
+        await Promise.all(batch.map(async (ep) => {
+            const epSlug = ep.slug.replace(/^\/|\/$/g, '');
+            const epPath = `anime/donghua/episode/${epSlug}`;
             try {
-              const detailRes = await axios.get(`${SANKA_BASE_URL}/${detailPath}`);
-              await collection.updateOne(
-                { path: detailPath },
-                { $set: { data: detailRes.data, timestamp: Date.now() } },
-                { upsert: true }
-              );
-              await delay(1200);
-
-              const episodes = detailRes.data.episodes_list || [];
-              console.log(`   - Menyimpan ${episodes.length} episode...`);
-              
-              for (const ep of episodes) {
-                const epSlug = ep.slug.replace(/^\/|\/$/g, '');
-                const epPath = `anime/donghua/episode/${epSlug}`;
-
-                const existing = await collection.findOne({ path: epPath });
+                const { data: existing } = await supabase.from('api_cache').select('path').eq('path', epPath).single();
                 if (!existing) {
-                  try {
-                    const epRes = await axios.get(`${SANKA_BASE_URL}/${epPath}`);
-                    await collection.updateOne(
-                      { path: epPath },
-                      { $set: { data: epRes.data, timestamp: Date.now() } },
-                      { upsert: true }
-                    );
-                    process.stdout.write(`.`);
-                    await delay(1000);
-                  } catch (e) {
-                    process.stdout.write(`x`);
-                  }
-                } else {
-                  process.stdout.write(`o`);
-                }
-              }
-            } catch (err) {
-              console.log(`   ⚠️ Gagal ambil detail series: ${seriesSlug}`);
-            }
-          }
-          page++;
-          if (page > 100) break;
-        } catch (err) {
-          console.error(`
-❌ Error hal ${page}:`, err.message);
-          hasMore = false;
-        }
-      }
+                    const res = await axios.get(`${SANKA_BASE_URL}/${epPath}`, axiosConfig);
+                    await supabase.from('api_cache').upsert({ path: epPath, data: res.data, timestamp: Date.now() });
+                    process.stdout.write('.');
+                    await new Promise(r => setTimeout(r, 600)); 
+                } else { process.stdout.write('o'); }
+            } catch (e) { process.stdout.write('x'); }
+        }));
     }
-    console.log('\n\n✨ PEMBANGUNAN GUDANG SELESAI! ✨');
-  } catch (err) {
-    console.error('❌ Fatal:', err);
-  } finally {
-    await client.close();
-  }
 }
 
+async function processSeries(item) {
+    const slug = item.slug.replace(/^\/|\/$/g, '');
+    const detailPath = `anime/donghua/detail/${slug}`;
+    try {
+        console.log(`\n🌀 Series: ${item.title}`);
+        const { data: cached } = await supabase.from('api_cache').select('data').eq('path', detailPath).single();
+        let detailData = cached?.data;
+        if (!detailData) {
+            const res = await axios.get(`${SANKA_BASE_URL}/${detailPath}`, axiosConfig);
+            detailData = res.data;
+            await supabase.from('api_cache').upsert({ path: detailPath, data: detailData, timestamp: Date.now() });
+        }
+        if (detailData && detailData.episodes_list) await processEpisodeBatch(detailData.episodes_list);
+    } catch (e) { console.log(`\n⚠️ Fail: ${item.title}`); }
+}
+
+async function warmup() {
+    console.log('🌌 PINGHUA SILENT-ASSASSIN ACTIVATED 🌌');
+    const sections = [
+        { name: 'ongoing', key: 'ongoing_donghua' },
+        { name: 'completed', key: 'completed_donghua' }
+    ];
+    
+    for (const section of sections) {
+        let page = 1;
+        while (true) {
+            console.log(`\n\n📄 Sector: ${section.name.toUpperCase()} | Page: ${page}`);
+            try {
+                const res = await axios.get(`${SANKA_BASE_URL}/anime/donghua/${section.name}/${page}`, axiosConfig);
+                const seriesList = res.data[section.key] || [];
+                if (seriesList.length === 0) break;
+
+                for (const item of seriesList) {
+                    await processSeries(item);
+                }
+                page++;
+                await new Promise(r => setTimeout(r, 2000));
+            } catch (err) {
+                console.log(`\n❌ Error: ${err.message}`);
+                if (err.response?.status === 429) {
+                    console.log('🛑 Limit Sanka! Istirahat 30 detik...');
+                    await new Promise(r => setTimeout(r, 30000));
+                } else {
+                    break;
+                }
+            }
+        }
+    }
+    console.log('\n\n✨ MISSION ACCOMPLISHED! ✨');
+}
 warmup();

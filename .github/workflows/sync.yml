@@ -1,0 +1,27 @@
+name: Donghua Auto-Sync
+
+on:
+  schedule:
+    - cron: '*/30 * * * *' # Jalan tiap 30 menit
+  workflow_dispatch: # Biar bisa diklik manual di GitHub
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install Dependencies
+        run: npm install axios @supabase/supabase-js
+
+      - name: Run Ultra-Sync
+        run: node scripts/ultra-sync.js
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
