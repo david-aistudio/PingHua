@@ -9,7 +9,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function generate() {
-  console.log('🛰️ Generating Static Sitemap...');
+  console.log('🛰️ Generating Static Sitemap for Production...');
   
   const staticPages = ['', '/ongoing', '/completed', '/search', '/genres', '/by-year'];
   const { data: pages } = await supabase.from('api_cache').select('path');
@@ -26,8 +26,17 @@ async function generate() {
   ${dynamicUrls.join('')}
 </urlset>`;
 
-  fs.writeFileSync('./public/sitemap.xml', sitemap);
-  console.log('✅ Success! File saved at ./public/sitemap.xml');
+  // Tulis ke DIST biar langsung di-publish sama Vercel
+  const distPath = './dist/sitemap.xml';
+  const publicPath = './public/sitemap.xml';
+
+  if (fs.existsSync('./dist')) {
+      fs.writeFileSync(distPath, sitemap);
+      console.log(`✅ Success! File saved at ${distPath}`);
+  }
+  
+  fs.writeFileSync(publicPath, sitemap);
+  console.log(`✅ Also saved at ${publicPath} for local development`);
 }
 
 generate();
