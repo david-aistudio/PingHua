@@ -118,7 +118,8 @@ export const api = {
   },
 
   search: async (keyword: string, page: number = 1) => {
-    const response = await fetch(`${BASE_URL}/anime/donghua/search/${keyword}/${page}`);
+    const encodedKeyword = encodeURIComponent(keyword);
+    const response = await fetch(`${BASE_URL}anime/donghua/search/${encodedKeyword}/${page}`);
     return response.json();
   },
 

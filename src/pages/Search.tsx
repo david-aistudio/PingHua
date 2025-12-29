@@ -33,11 +33,18 @@ export default function Search() {
     queryKey: ['search', debouncedQuery],
     queryFn: async () => {
         if (!debouncedQuery) return [];
-        const data = await api.search(debouncedQuery, 1);
-        return data.data || data.search_results || [];
+        const res = await api.search(debouncedQuery, 1);
+        const rawData = res.data || res.search_results || [];
+        
+        // Bersihkan slug dari hasil search sanka
+        return rawData.map((item: any) => ({
+            ...item,
+            slug: item.slug ? item.slug.replace(/^\/|\/$/g, '').replace('donghua/detail/', '') : 
+                  item.href ? item.href.replace('/donghua/detail/', '').replace(/^\/|\/$/g, '') : ''
+        }));
     },
-    enabled: !!debouncedQuery && debouncedQuery.length > 2,
-    staleTime: 1000 * 60 * 5, // 5 minutes cache
+    enabled: !!debouncedQuery && debouncedQuery.length > 1, // Turunkan ke 1 huruf biar lebih sensitif
+    staleTime: 1000 * 60 * 5,
   });
 
   const popularSearches = ['Soul Land', 'Battle Through the Heavens', 'Perfect World', 'Swallowed Star', 'Throne of Seal'];
