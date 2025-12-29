@@ -84,11 +84,12 @@ async function generateSitemap() {
 </urlset>`;
 
   // 4. Write to public/sitemap.xml
-  const publicDir = path.resolve(__dirname, '..', 'public');
+  const publicDir = './public';
   if (!fs.existsSync(publicDir)) fs.mkdirSync(publicDir);
   
-  fs.writeFileSync(path.join(publicDir, 'sitemap.xml'), sitemap);
-  console.log(`✅ Sitemap generated with ${staticPages.length + dynamicUrls.length} URLs!`);
+  const outputPath = path.join(publicDir, 'sitemap.xml');
+  fs.writeFileSync(outputPath, sitemap);
+  console.log(`✅ Sitemap generated with ${staticPages.length + dynamicUrls.length} URLs at ${outputPath}!`);
 }
 
 generateSitemap();
