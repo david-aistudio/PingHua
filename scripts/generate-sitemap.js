@@ -9,7 +9,7 @@ const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 async function generate() {
-  console.log('🛰️ Generating Static Sitemap for Production...');
+  console.log('🛰️ Generating Universal Sitemap...');
   
   const staticPages = ['', '/ongoing', '/completed', '/search', '/genres', '/by-year'];
   const { data: pages } = await supabase.from('api_cache').select('path');
@@ -26,17 +26,25 @@ async function generate() {
   ${dynamicUrls.join('')}
 </urlset>`;
 
-  // Tulis ke DIST biar langsung di-publish sama Vercel
-  const distPath = './dist/sitemap.xml';
-  const publicPath = './public/sitemap.xml';
+  // DAFTAR LOKASI PENYELAMATAN
+  const targetDirs = [
+    './dist',
+    './public',
+    './.vercel/output/static'
+  ];
 
-  if (fs.existsSync('./dist')) {
-      fs.writeFileSync(distPath, sitemap);
-      console.log(`✅ Success! File saved at ${distPath}`);
-  }
-  
-  fs.writeFileSync(publicPath, sitemap);
-  console.log(`✅ Also saved at ${publicPath} for local development`);
+  targetDirs.forEach(dir => {
+    try {
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        const outputPath = path.join(dir, 'sitemap.xml');
+        fs.writeFileSync(outputPath, sitemap);
+        console.log(`✅ Saved to: ${outputPath}`);
+    } catch (e) {
+        console.log(`⚠️ Skipped: ${dir} (${e.message})`);
+    }
+  });
 }
 
 generate();
