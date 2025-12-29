@@ -1,11 +1,14 @@
+"use client";
+
 import { useState } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Home, Search, PlayCircle, Grid, Menu, X, Heart } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 
 export const Navbar = () => {
-  const location = useLocation();
+  const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
 
   const navItems = [
@@ -17,28 +20,30 @@ export const Navbar = () => {
   ];
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-end gap-2">
+    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-end gap-3">
       
       {/* Expandable Nav Items */}
       <nav 
         className={cn(
-          "bg-black/75 backdrop-blur-2xl border border-white/20 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] flex items-center gap-1 px-2 py-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          "bg-black/80 backdrop-blur-2xl rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-1 px-2 py-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
+          // BORDER TEGAS
+          "border border-white/20 ring-1 ring-white/5",
           isOpen ? "w-[320px] md:w-[400px] opacity-100 translate-y-0" : "w-0 px-0 opacity-0 translate-y-10"
         )}
       >
         <div className="flex w-full justify-between items-center min-w-max">
           {navItems.map((item) => {
-            const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path) && item.path !== '/search');
+            const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path) && item.path !== '/search');
             
             return (
-              <Link key={item.path} to={item.path} onClick={() => setIsOpen(false)}>
+              <Link key={item.path} href={item.path} onClick={() => setIsOpen(false)}>
                 <Button
                   variant="ghost"
                   size="icon"
                   className={cn(
                     "rounded-full h-10 w-10 md:h-12 md:w-12 transition-all duration-300",
                     isActive 
-                      ? "bg-white text-black hover:bg-white/90 shadow-lg shadow-white/20 scale-105" 
+                      ? "bg-white text-black hover:bg-white/90 shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105" 
                       : "text-gray-400 hover:text-white hover:bg-white/10"
                   )}
                 >
@@ -55,10 +60,12 @@ export const Navbar = () => {
       <Button
         size="icon"
         className={cn(
-            "h-14 w-14 rounded-full shadow-[0_0_20px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-110 active:scale-90 border-2",
+            "h-14 w-14 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-110 active:scale-90",
+            // BORDER TEGAS
+            "border-2",
             isOpen 
-              ? "bg-white text-black border-white hover:bg-white/90" 
-              : "bg-black/75 backdrop-blur-2xl text-white border-white/20 hover:bg-black"
+              ? "bg-white text-black border-white hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.3)]" 
+              : "bg-black/80 backdrop-blur-2xl text-white border-white/20 hover:border-white/50 hover:bg-black"
         )}
         onClick={() => setIsOpen(!isOpen)}
       >

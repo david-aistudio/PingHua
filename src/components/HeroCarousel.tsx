@@ -1,5 +1,7 @@
+"use client";
+
 import React, { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
 import { Play } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DonghuaCard as DonghuaType } from '@/lib/api'
@@ -27,7 +29,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
       
       {/* Brand Logo - Top Left Overlay */}
       <div className="absolute top-6 left-6 z-50">
-        <Link to="/">
+        <Link href="/">
             <img 
                 src="/logo.png" 
                 alt="PingHua" 
@@ -83,13 +85,13 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                       
                       {/* Action Buttons - More Compact */}
                       <div className="flex items-center gap-3 pt-2">
-                          <Link to={`/detail/${item.slug}`}>
+                          <Link href={`/detail/${item.slug}`}>
                               <Button className="rounded-full px-6 h-11 bg-white text-black hover:bg-white/90 text-sm font-bold transition-all hover:scale-105 active:scale-95 shadow-xl">
                                   <Play className="w-4 h-4 mr-2 fill-current" />
                                   Nonton
                               </Button>
                           </Link>
-                          <Link to={`/detail/${item.slug}`}>
+                          <Link href={`/detail/${item.slug}`}>
                             <Button className="rounded-full px-6 h-11 bg-white/10 backdrop-blur-xl border border-white/10 text-white hover:bg-white/20 text-sm font-medium transition-all hover:scale-105 active:scale-95">
                                 Detail
                             </Button>

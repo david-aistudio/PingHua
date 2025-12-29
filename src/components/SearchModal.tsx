@@ -1,17 +1,18 @@
+"use client";
+
 import { useState, useEffect } from 'react';
 import { X, Search as SearchIcon, Play } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useRouter } from 'next/navigation';
 import { Dialog, DialogContent, DialogTitle } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { api } from '@/lib/api';
 import { useQuery } from '@tanstack/react-query';
-import { useDebounce } from '@/hooks/use-debounce'; // We might need to create this hook
 
 export function SearchModal({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const navigate = useNavigate();
+  const router = useRouter();
 
   // Simple debounce implementation
   useEffect(() => {
@@ -28,14 +29,14 @@ export function SearchModal({ open, onOpenChange }: { open: boolean; onOpenChang
 
   const handleSelect = (slug: string) => {
     onOpenChange(false);
-    navigate(`/detail/${slug}`);
+    router.push(`/detail/${slug}`);
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (query.length > 0) {
       onOpenChange(false);
-      navigate(`/search/${query}`);
+      router.push(`/search/${query}`);
     }
   };
 

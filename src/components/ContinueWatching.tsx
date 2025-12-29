@@ -1,6 +1,8 @@
+"use client";
+
 import { useEffect, useState } from 'react';
 import { Play, X, Clock } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import Link from 'next/link';
 import { history, HistoryItem } from '@/lib/history';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -30,7 +32,7 @@ export const ContinueWatching = () => {
           <div className="w-1 h-6 bg-primary rounded-full"></div>
           <h2 className="text-2xl font-bold tracking-tight">Lanjut Tonton</h2>
         </div>
-        <Link to="/history" className="text-sm text-muted-foreground hover:text-primary transition-colors">
+        <Link href="/history" className="text-sm text-muted-foreground hover:text-primary transition-colors">
           Lihat Semua History
         </Link>
       </div>
@@ -39,7 +41,7 @@ export const ContinueWatching = () => {
         {items.map((item) => (
           <Link 
             key={item.slug} 
-            to={`/episode/${item.episodeSlug}`}
+            href={`/episode/${item.episodeSlug}`}
             className="group relative flex items-center gap-4 p-3 rounded-xl bg-card border border-white/20 hover:border-primary transition-all duration-300 overflow-hidden"
           >
             {/* Background Blur Effect */}
