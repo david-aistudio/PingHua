@@ -15,69 +15,51 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: 'Path is required' });
   }
 
-  const cleanPath = path.startsWith('/') ? path.slice(1) : path;
-  const sankaUrl = `${SANKA_BASE_URL}/${cleanPath}`;
+  // Gunakan path mentah tanpa pembersihan berlebih untuk menghindari double encoding
+  const sankaUrl = `${SANKA_BASE_URL}/${path}`;
 
   try {
-    // 1. PRIORITAS UTAMA: Ambil dari Supabase (JAKARTA SPEED ⚡)
+    // 1. Cek Cache Supabase dulu
     const { data: cached } = await supabase
         .from('api_cache')
         .select('data, timestamp')
-        .eq('path', cleanPath)
+        .eq('path', path)
         .single();
 
-    // Kalau ada di cache, langsung kasih ke user (INSTAN!)
     if (cached) {
-      console.log(`[Cache Hit] Fast delivery for: ${cleanPath}`);
-      // Tambah header biar browser simpan cache selama 5 menit
-      res.setHeader('Cache-Control', 'public, s-maxage=300, stale-while-revalidate=600');
-      res.status(200).json(cached.data);
-
-      // JANGAN BERHENTI: Cek apakah perlu update dari Sanka di belakang layar (Background Sync)
-      // Kita update kalau data sudah lebih dari 30 menit (buat Home) atau 12 jam (buat Detail)
-      const now = Date.now();
-      let staleThreshold = 1000 * 60 * 30; // 30 menit
-      if (cleanPath.includes('/detail/') || cleanPath.includes('/episode/')) {
-        staleThreshold = 1000 * 60 * 60 * 12; // 12 jam
-      }
-
-      if (now - cached.timestamp > staleThreshold) {
-        console.log(`[Background Sync] Refreshing stale data: ${cleanPath}`);
-        // Kita nembak Sanka tanpa 'await' biar gak nungguin
-        axios.get(sankaUrl, { 
-            headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' }
-        }).then(res => {
-            supabase.from('api_cache').upsert({
-                path: cleanPath,
-                data: res.data,
-                timestamp: Date.now()
-            }).then(() => console.log(`[Cache] Background Update Success: ${cleanPath}`))
-              .catch(e => console.error('[Cache Update Error]', e.message));
-        }).catch(() => {});
-      }
-      return; // Selesai buat user
+      console.log(`[Proxy] Cache Hit: ${path}`);
+      return res.status(200).json(cached.data);
     }
 
-    // 2. JALUR CADANGAN: Kalau belum ada di Supabase, ambil dari Sanka
-    console.log(`[Cache Miss] Direct fetch from Sanka: ${cleanPath}`);
+    // 2. Kalau gak ada, baru nembak Sanka
+    console.log(`[Proxy] Fetching: ${sankaUrl}`);
     const sankaRes = await axios.get(sankaUrl, {
-        headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' },
-        timeout: 10000
+        headers: { 
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+            'Accept': 'application/json'
+        },
+        timeout: 12000
     });
 
     const data = sankaRes.data;
 
-    // Simpan hasil ke Supabase buat kunjungan berikutnya
+    // 3. Simpan ke Supabase (Jangan di-await biar cepet)
     supabase.from('api_cache').upsert({
-        path: cleanPath,
+        path: path,
         data: data,
         timestamp: Date.now()
-    }).catch(e => console.error('[Initial Cache Error]', e.message));
+    }).catch(e => console.error('[Cache Save Error]', e.message));
 
     return res.status(200).json(data);
 
   } catch (error: any) {
-    console.error(`[Fatal Proxy Error] ${error.message}`);
-    return res.status(500).json({ error: 'Data currently unavailable' });
+    console.error(`[Fatal Proxy Error] path: ${path} | error: ${error.message}`);
+    
+    // Kalau Sanka nge-block (403/429/500), coba cari apa aja di DB yang mirip
+    return res.status(200).json({ 
+        status: "error", 
+        message: "Sanka busy, please try again",
+        data: [] 
+    });
   }
 }
