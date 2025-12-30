@@ -97,34 +97,90 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
   const rootComments = comments?.filter((c: any) => !c.parent_id).reverse() || [];
   const getReplies = (parentId: string) => comments?.filter((c: any) => c.parent_id === parentId) || [];
 
-  // Init Player & History
+  // STATE BARU BUAT RESCUE DATA
+  const [localEpisode, setLocalEpisode] = useState<EpisodeDetail | null>(episode);
+  const [isRescuing, setIsRescuing] = useState(false);
+
+  // Init Player & History & RESCUE MISSION
   useEffect(() => {
-    if (episode && episode.streaming?.servers?.length > 0) {
-      const servers = episode.streaming.servers;
+    // Kalo episode dari server kosong/rusak, kita lakukan MISI PENYELAMATAN
+    const checkAndRescue = async () => {
+        if (!localEpisode || !localEpisode.streaming || localEpisode.streaming.servers.length === 0) {
+            setIsRescuing(true);
+            try {
+                // Pake Proxy Sakti
+                const targetUrl = `https://www.sankavollerei.com/anime/donghua/episode/${slug}`;
+                const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
+                
+                console.log('🚑 Meluncurkan Misi Penyelamatan ke:', proxyUrl);
+                const res = await fetch(proxyUrl);
+                const data = await res.json();
+
+                if (data && data.streaming) {
+                    console.log('✅ Misi Sukses! Data diamankan.');
+                    setLocalEpisode(data);
+                    
+                    // Lapor ke Markas (Simpan ke DB biar user lain enak)
+                    fetch('/api/save', {
+                        method: 'POST',
+                        body: JSON.stringify({ path: `anime/donghua/episode/${slug}`, data: data })
+                    });
+                }
+            } catch (e) {
+                console.error('💀 Misi Gagal:', e);
+            } finally {
+                setIsRescuing(false);
+            }
+        }
+    };
+
+    checkAndRescue();
+  }, [slug]);
+
+  // Update selected server kalau localEpisode berubah
+  useEffect(() => {
+    if (localEpisode && localEpisode.streaming?.servers?.length > 0) {
+      const servers = localEpisode.streaming.servers;
       const rumble = servers.find(s => s.name && s.name.toLowerCase().includes('rumble'));
       const okRu = servers.find(s => s.name && s.name.toLowerCase().includes('ok.ru'));
       const bestServer = rumble?.url || okRu?.url || servers[0].url;
       
-      // Only set if not already set (prevent re-render loops)
       if (!selectedServer) setSelectedServer(bestServer);
 
-      if (episode.donghua_details && slug) {
+      if (localEpisode.donghua_details && slug) {
         history.add({
-          slug: episode.donghua_details.slug,
-          title: episode.donghua_details.title,
-          episode: episode.episode,
+          slug: localEpisode.donghua_details.slug,
+          title: localEpisode.donghua_details.title,
+          episode: localEpisode.episode,
           episodeSlug: slug,
-          poster: episode.donghua_details.poster,
+          poster: localEpisode.donghua_details.poster,
         });
       }
     }
-  }, [episode, slug, selectedServer]);
+  }, [localEpisode, slug]);
 
-  const prevEpisode = episode.navigation?.previous_episode || episode.prev_episode;
-  const nextEpisode = episode.navigation?.next_episode || episode.next_episode;
-  const donghuaSlug = episode.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
+  const episodeData = localEpisode || episode; // Prioritas data hasil rescue
 
-  const displayServers = (episode.streaming?.servers || []).filter(s => {
+  // Tampilan Loading Pas Rescuing
+  if (isRescuing) {
+      return <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white space-y-4">
+          <Loader2 className="w-10 h-10 animate-spin text-primary" />
+          <p className="animate-pulse text-sm text-gray-400">Sedang mencari sinyal darurat...</p>
+      </div>
+  }
+
+  // Tampilan Error kalau rescue gagal juga
+  if (!episodeData || !episodeData.streaming) {
+      return <div className="min-h-screen bg-black flex items-center justify-center text-white">
+          Link rusak atau episode belum tersedia. :(
+      </div>
+  }
+
+  const prevEpisode = episodeData.navigation?.previous_episode || episodeData.prev_episode;
+  const nextEpisode = episodeData.navigation?.next_episode || episodeData.next_episode;
+  const donghuaSlug = episodeData.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
+
+  const displayServers = (episodeData.streaming?.servers || []).filter(s => {
     const n = s.name?.toLowerCase() || '';
     const u = s.url?.toLowerCase() || '';
     return (n.includes('rumble') && u.includes('rumble.com')) || (n.includes('ok.ru') && u.includes('ok.ru'));
@@ -145,7 +201,7 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
       <div className="container mx-auto px-4 py-6">
         {/* Title and Voting Row */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h1 className="text-xl md:text-2xl font-bold leading-tight">{episode.episode}</h1>
+            <h1 className="text-xl md:text-2xl font-bold leading-tight">{episodeData.episode}</h1>
             <div className="flex items-center gap-2">
                 <div className="flex bg-neutral-900 rounded-full p-1 border border-white/10">
                     <button 
@@ -318,10 +374,10 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
 
             <TabsContent value="episodes">
                 <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
-                    {episode.episodes_list?.map((ep, i) => (
+                    {episodeData.episodes_list?.map((ep, i) => (
                         <Link key={i} href={`/episode/${ep.slug}`}>
                             <Button variant={ep.slug === slug ? 'default' : 'outline'} className="w-full h-10 border-white/20 text-xs font-bold rounded-xl transition-all hover:scale-105 active:scale-95">
-                                {episode.episodes_list!.length - i}
+                                {episodeData.episodes_list!.length - i}
                             </Button>
                         </Link>
                     ))}
