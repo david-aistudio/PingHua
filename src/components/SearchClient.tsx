@@ -15,7 +15,7 @@ export default function SearchClient({ initialQuery = '' }: { initialQuery?: str
   const wrapperRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
 
-  // 1. Logic Debounce (Nunggu user diem 500ms baru search)
+  // 1. Logic Debounce
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(query);
@@ -25,26 +25,32 @@ export default function SearchClient({ initialQuery = '' }: { initialQuery?: str
     return () => clearTimeout(timer);
   }, [query]);
 
-  // 2. Fetch Data Otomatis pake React Query
+  // 2. Fetch Data
   const { data: searchResults, isLoading } = useQuery({
     queryKey: ['search-live', debouncedQuery],
     queryFn: async () => {
-        const res = await api.search(debouncedQuery);
-        return res?.data || [];
+        if (!debouncedQuery || debouncedQuery.length <= 2) return [];
+        try {
+            const res = await api.search(debouncedQuery);
+            return res?.data || [];
+        } catch (e) { return []; }
     },
-    enabled: debouncedQuery.length > 2, // Cuma cari kalau udah ngetik 3 huruf
-    staleTime: 1000 * 60, // Cache 1 menit
+    enabled: debouncedQuery.length > 2, 
+    staleTime: 1000 * 60,
   });
 
-  // 3. Tutup dropdown kalau klik di luar
+  // 3. Click Outside Handler (Safe for SSR)
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
+    // Cek window dulu
+    if (typeof window !== 'undefined') {
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }
   }, [wrapperRef]);
 
   const handleSearch = (e: React.FormEvent) => {
@@ -71,9 +77,9 @@ export default function SearchClient({ initialQuery = '' }: { initialQuery?: str
           className="pl-12 pr-12 h-14 rounded-full bg-secondary/50 border-white/10 text-lg shadow-lg focus-visible:ring-primary backdrop-blur-md"
         />
 
-        {/* Loading Indicator / Clear Button */}
+        {/* Loading / Clear */}
         <div className="absolute right-4 top-1/2 -translate-y-1/2">
-            {isLoading && query === debouncedQuery ? (
+            {isLoading && query === debouncedQuery && query.length > 2 ? (
                 <Loader2 className="w-5 h-5 animate-spin text-primary" />
             ) : query.length > 0 ? (
                 <button type="button" onClick={() => { setQuery(''); setIsOpen(false); }}>
@@ -83,11 +89,10 @@ export default function SearchClient({ initialQuery = '' }: { initialQuery?: str
         </div>
       </form>
 
-      {/* DROPDOWN HASIL LIVE SEARCH */}
+      {/* DROPDOWN */}
       {isOpen && debouncedQuery.length > 2 && (
         <div className="absolute top-full left-0 right-0 mt-4 bg-black/90 border border-white/10 rounded-2xl shadow-2xl overflow-hidden backdrop-blur-xl animate-in fade-in zoom-in-95 duration-200">
             
-            {/* Hasil Ditemukan */}
             {searchResults && searchResults.length > 0 ? (
                 <div className="max-h-[60vh] overflow-y-auto p-2 scrollbar-hide">
                     <div className="px-2 py-2 text-xs font-bold text-muted-foreground uppercase tracking-widest">
@@ -126,7 +131,6 @@ export default function SearchClient({ initialQuery = '' }: { initialQuery?: str
                     </button>
                 </div>
             ) : (
-                /* Tidak Ditemukan */
                 !isLoading && (
                     <div className="p-8 text-center text-muted-foreground">
                         <p>Tidak ditemukan hasil.</p>
