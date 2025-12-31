@@ -76,15 +76,15 @@ export function SearchModal({ open, onOpenChange }: { open: boolean; onOpenChang
             </div>
           )}
 
-          {!isLoading && debouncedQuery.length > 2 && searchResults?.length === 0 && (
+          {!isLoading && debouncedQuery.length > 2 && searchResults?.data?.length === 0 && (
             <div className="p-8 text-center text-muted-foreground">
               No results found for "{debouncedQuery}"
             </div>
           )}
 
-          {!isLoading && searchResults && searchResults.length > 0 && (
+          {!isLoading && searchResults?.data && searchResults.data.length > 0 && (
             <div className="grid gap-1">
-              {searchResults.map((item: any) => (
+              {searchResults.data.map((item: any) => (
                 <div
                   key={item.slug}
                   className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/10 cursor-pointer transition-colors group"

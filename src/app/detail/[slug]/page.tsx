@@ -3,12 +3,12 @@ import { DetailContent } from '@/components/DetailContent';
 import { Metadata } from 'next';
 import { redirect } from 'next/navigation';
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
-  // Jika ini slug episode, metadata detail gak perlu diproses (bakal diredirect)
-  if (params.slug.includes('-episode-')) return { title: 'Redirecting...' };
-
-  const data = await api.getDetail(params.slug);
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const data = await api.getDetail(slug);
   
+  if (slug.includes('-episode-')) return { title: 'Redirecting...' };
+
   if (!data?.title) {
     return { title: 'Not Found - PingHua' };
   }
@@ -33,14 +33,16 @@ export async function generateMetadata({ params }: { params: { slug: string } })
   };
 }
 
-export default async function DetailPage({ params }: { params: { slug: string } }) {
+export default async function DetailPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
+  
   // JURUS REDIRECT: Kalau klik dari Home (Latest Release) biasanya slug episode
-  if (params.slug.includes('-episode-')) {
-    console.log(`\x1b[33m[REDIRECT]\x1b[0m 🔀 Slug episode terdeteksi di Detail: ${params.slug}. Lempar ke /episode/`);
-    redirect(`/episode/${params.slug}`);
+  if (slug.includes('-episode-')) {
+    console.log(`\x1b[33m[REDIRECT]\x1b[0m 🔀 Slug episode terdeteksi di Detail: ${slug}. Lempar ke /episode/`);
+    redirect(`/episode/${slug}`);
   }
 
-  const donghua = await api.getDetail(params.slug);
+  const donghua = await api.getDetail(slug);
 
   if (!donghua || !donghua.title) {
     return (
@@ -74,7 +76,7 @@ export default async function DetailPage({ params }: { params: { slug: string } 
       },
       "potentialAction": {
         "@type": "WatchAction",
-        "target": `https://pinghua.qzz.io/detail/${params.slug}`
+        "target": `https://pinghua.qzz.io/detail/${slug}`
       }
     },
     {
@@ -91,7 +93,7 @@ export default async function DetailPage({ params }: { params: { slug: string } 
           "@type": "ListItem",
           "position": 2,
           "name": donghua.title,
-          "item": `https://pinghua.qzz.io/detail/${params.slug}`
+          "item": `https://pinghua.qzz.io/detail/${slug}`
         }
       ]
     }
@@ -103,7 +105,7 @@ export default async function DetailPage({ params }: { params: { slug: string } 
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <DetailContent donghua={donghua} slug={params.slug} />
+      <DetailContent donghua={donghua} slug={slug} />
     </>
   );
 }

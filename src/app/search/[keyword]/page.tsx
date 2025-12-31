@@ -2,16 +2,18 @@ import { api } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import SearchClient from '@/components/SearchClient';
 
-export async function generateMetadata({ params }: { params: { keyword: string } }) {
-  const keyword = decodeURIComponent(params.keyword);
+export async function generateMetadata({ params }: { params: Promise<{ keyword: string }> }) {
+  const { keyword: keywordEncoded } = await params;
+  const keyword = decodeURIComponent(keywordEncoded);
   return {
     title: `Hasil Pencarian: ${keyword} - PingHua`,
     description: `Nonton donghua ${keyword} sub indo gratis.`,
   };
 }
 
-export default async function SearchResultPage({ params }: { params: { keyword: string } }) {
-  const keyword = decodeURIComponent(params.keyword);
+export default async function SearchResultPage({ params }: { params: Promise<{ keyword: string }> }) {
+  const { keyword: keywordEncoded } = await params;
+  const keyword = decodeURIComponent(keywordEncoded);
   const response = await api.search(keyword);
   const results = response?.data || []; 
 

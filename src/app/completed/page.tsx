@@ -7,8 +7,9 @@ export const metadata = {
   description: 'Daftar donghua yang sudah tamat (Completed) subtitle Indonesia.',
 };
 
-export default async function CompletedPage({ searchParams }: { searchParams: { page?: string } }) {
-  const page = Number(searchParams.page) || 1;
+export default async function CompletedPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { page: pageStr } = await searchParams;
+  const page = Number(pageStr) || 1;
   const data = await api.getCompleted(page);
   const list = data?.completed_donghua || [];
 

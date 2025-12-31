@@ -2,20 +2,23 @@ import { api } from '@/lib/api';
 import { DonghuaCard } from '@/components/DonghuaCard';
 import { Pagination } from '@/components/Pagination'; // Need to create this
 
-export async function generateMetadata({ params }: { params: { slug: string } }) {
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params;
   // Capitalize slug for title
-  const title = params.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const title = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   return {
     title: `Donghua Genre ${title} - PingHua`,
     description: `Nonton donghua genre ${title} subtitle Indonesia terlengkap.`,
   };
 }
 
-export default async function GenreDetailPage({ params, searchParams }: { params: { slug: string }, searchParams: { page?: string } }) {
-  const page = Number(searchParams.page) || 1;
-  const data = await api.getByGenre(params.slug, page);
+export default async function GenreDetailPage({ params, searchParams }: { params: Promise<{ slug: string }>, searchParams: Promise<{ page?: string }> }) {
+  const { slug } = await params;
+  const { page: pageStr } = await searchParams;
+  const page = Number(pageStr) || 1;
+  const data = await api.getByGenre(slug, page);
   const donghuaList = data?.data || [];
-  const title = params.slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const title = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 
   return (
     <div className="container mx-auto px-4 py-8 min-h-screen space-y-8">
@@ -31,7 +34,7 @@ export default async function GenreDetailPage({ params, searchParams }: { params
       </div>
 
       {/* Pagination Simple */}
-      <Pagination currentPage={page} basePath={`/genre/${params.slug}`} />
+      <Pagination currentPage={page} basePath={`/genre/${slug}`} />
     </div>
   );
 }

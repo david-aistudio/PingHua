@@ -7,8 +7,9 @@ export const metadata = {
   description: 'Daftar donghua yang sedang tayang (On-going) subtitle Indonesia.',
 };
 
-export default async function OngoingPage({ searchParams }: { searchParams: { page?: string } }) {
-  const page = Number(searchParams.page) || 1;
+export default async function OngoingPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+  const { page: pageStr } = await searchParams;
+  const page = Number(pageStr) || 1;
   const data = await api.getOngoing(page);
   const list = data?.ongoing_donghua || [];
 

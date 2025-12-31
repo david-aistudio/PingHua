@@ -30,20 +30,20 @@ export interface Episode {
 export interface DonghuaDetail {
   status: string;
   title: string;
-  alter_title: string;
+  alter_title?: string;
   poster: string;
-  rating: string;
-  studio: string;
-  network: string;
-  released: string;
-  duration: string;
-  type: string;
+  rating?: string;
+  studio?: string;
+  network?: string;
+  released?: string;
+  duration?: string;
+  type?: string;
   episodes_count: string;
-  season: string;
-  country: string;
-  released_on: string;
-  updated_on: string;
-  genres: Genre[];
+  season?: string;
+  country?: string;
+  released_on?: string;
+  updated_on?: string;
+  genres?: Genre[];
   synopsis: string;
   episodes_list: Episode[];
 }

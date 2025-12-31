@@ -6,7 +6,7 @@ const BASE_URL = 'https://pinghua.qzz.io';
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // 1. Halaman Statis (Wajib Ada)
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${BASE_URL}`, lastModified: new Date(), changeFrequency: 'daily', priority: 1 },
+    { url: `${BASE_URL}`, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
     { url: `${BASE_URL}/ongoing`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.8 },
     { url: `${BASE_URL}/completed`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.8 },
     { url: `${BASE_URL}/genres`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.5 },

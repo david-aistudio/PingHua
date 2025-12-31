@@ -7,19 +7,21 @@ const withPWA = withPWAInit({
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
   swMinify: true,
-  disable: false, // Set false biar bisa lo test di dev kalau mau
+  disable: false, 
   workboxOptions: {
     disableDevLogs: true,
   },
 });
 
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
-  typescript: {
-    ignoreBuildErrors: true,
-  },
+  // Matikan Turbopack experimental key karena udah default atau bikin warning
+  // experimental: { turbo: {} }, 
+  
+  // Puppeteer wajib external di serverless
+  serverExternalPackages: ['puppeteer', 'puppeteer-extra', 'puppeteer-extra-plugin-stealth'],
+
+  optimizeFonts: false,
+
   images: {
     remotePatterns: [
       {

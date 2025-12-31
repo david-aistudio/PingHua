@@ -103,31 +103,32 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
 
   // Init Player & History & RESCUE MISSION
   useEffect(() => {
-    // Kalo episode dari server kosong/rusak, kita lakukan MISI PENYELAMATAN
+    // 1. Cek Data (Rescue kalau kosong)
     const checkAndRescue = async () => {
         if (!localEpisode || !localEpisode.streaming || localEpisode.streaming.servers.length === 0) {
             setIsRescuing(true);
             try {
-                // Pake Proxy Sakti
-                const targetUrl = `https://www.sankavollerei.com/anime/donghua/episode/${slug}`;
-                const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`;
-                
-                console.log('🚑 Meluncurkan Misi Penyelamatan ke:', proxyUrl);
-                const res = await fetch(proxyUrl);
-                const data = await res.json();
+                // Pake API Route Auratail (Internal) buat rescue biar aman dari CORS
+                const res = await fetch('/api/provider/auratail', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'episode', url: `https://auratail.vip/${slug}/` })
+                });
+                const json = await res.json();
 
-                if (data && data.streaming) {
-                    console.log('✅ Misi Sukses! Data diamankan.');
-                    setLocalEpisode(data);
+                if (json.status === 'success' && json.data) {
+                    console.log('✅ Rescue Success!');
+                    const cleanData = json.data;
+                    setLocalEpisode(cleanData);
                     
-                    // Lapor ke Markas (Simpan ke DB biar user lain enak)
+                    // Simpan ke DB
                     fetch('/api/save', {
                         method: 'POST',
-                        body: JSON.stringify({ path: `anime/donghua/episode/${slug}`, data: data })
+                        body: JSON.stringify({ path: `episode/${slug}`, data: cleanData })
                     });
                 }
             } catch (e) {
-                console.error('💀 Misi Gagal:', e);
+                console.error('💀 Rescue Failed:', e);
             } finally {
                 setIsRescuing(false);
             }
@@ -137,42 +138,40 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
     checkAndRescue();
   }, [slug]);
 
-  // Update selected server kalau localEpisode berubah
+  // 2. Pilih Server (Auto Select First)
   useEffect(() => {
     if (localEpisode && localEpisode.streaming?.servers?.length > 0) {
-      const servers = localEpisode.streaming.servers;
-      const rumble = servers.find(s => s.name && s.name.toLowerCase().includes('rumble'));
-      const okRu = servers.find(s => s.name && s.name.toLowerCase().includes('ok.ru'));
-      const bestServer = rumble?.url || okRu?.url || servers[0].url;
-      
-      if (!selectedServer) setSelectedServer(bestServer);
+      // Default pilih server pertama (biasanya HD)
+      if (!selectedServer) setSelectedServer(localEpisode.streaming.servers[0].url);
 
+      // Save History
       if (localEpisode.donghua_details && slug) {
+        // Cari poster yang bener (bukan base64 lazyload)
+        const realPoster = localEpisode.donghua_details.poster || "";
+        
         history.add({
           slug: localEpisode.donghua_details.slug,
           title: localEpisode.donghua_details.title,
           episode: localEpisode.episode,
           episodeSlug: slug,
-          poster: localEpisode.donghua_details.poster,
+          poster: realPoster,
         });
       }
     }
   }, [localEpisode, slug]);
 
-  const episodeData = localEpisode || episode; // Prioritas data hasil rescue
+  const episodeData = localEpisode || episode;
 
-  // Tampilan Loading Pas Rescuing
   if (isRescuing) {
       return <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white space-y-4">
           <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="animate-pulse text-sm text-gray-400">Sedang mencari sinyal darurat...</p>
+          <p className="animate-pulse text-sm text-gray-400">Sedang mengambil video dari server...</p>
       </div>
   }
 
-  // Tampilan Error kalau rescue gagal juga
-  if (!episodeData || !episodeData.streaming) {
+  if (!episodeData || !episodeData.streaming || episodeData.streaming.servers.length === 0) {
       return <div className="min-h-screen bg-black flex items-center justify-center text-white">
-          Link rusak atau episode belum tersedia. :(
+          <p>Video tidak ditemukan. Coba refresh atau lapor admin.</p>
       </div>
   }
 
@@ -180,26 +179,27 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
   const nextEpisode = episodeData.navigation?.next_episode || episodeData.next_episode;
   const donghuaSlug = episodeData.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
 
-  const displayServers = (episodeData.streaming?.servers || []).filter(s => {
-    const n = s.name?.toLowerCase() || '';
-    const u = s.url?.toLowerCase() || '';
-    return (n.includes('rumble') && u.includes('rumble.com')) || (n.includes('ok.ru') && u.includes('ok.ru'));
-  });
-
   return (
     <div className="min-h-screen pb-24 bg-background text-foreground font-sans">
       
-      {/* STICKY PLAYER */}
+      {/* PLAYER UTAMA */}
       <div className="sticky top-0 z-50 w-full bg-black shadow-2xl border-b border-white/10">
-        <div className="w-full aspect-video mx-auto max-w-[100vw]">
-          {selectedServer && (
-            <iframe src={selectedServer} className="w-full h-full" allowFullScreen sandbox="allow-scripts allow-same-origin" />
+        <div className="w-full aspect-video mx-auto max-w-[100vw] relative group">
+          {selectedServer ? (
+            <iframe 
+                src={selectedServer} 
+                className="w-full h-full" 
+                allowFullScreen 
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            />
+          ) : (
+            <div className="flex items-center justify-center h-full text-gray-500">Pilih Server...</div>
           )}
         </div>
       </div>
 
       <div className="container mx-auto px-4 py-6">
-        {/* Title and Voting Row */}
+        {/* Title and Controls */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
             <h1 className="text-xl md:text-2xl font-bold leading-tight">{episodeData.episode}</h1>
             <div className="flex items-center gap-2">
@@ -248,15 +248,11 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
                 <SelectValue placeholder="Pilih Server" />
               </SelectTrigger>
               <SelectContent className="bg-black border-white/20">
-                {displayServers.length > 0 ? (
-                  displayServers.map((s, i) => (
+                {episodeData.streaming.servers.map((s, i) => (
                     <SelectItem key={i} value={s.url} className="text-xs">
-                        {s.name.toLowerCase().includes('rumble') ? 'Free-1 (Clean)' : 'Free-2 (Fast)'}
+                        {s.name || `Server ${i+1}`}
                     </SelectItem>
-                  ))
-                ) : (
-                  <SelectItem value={selectedServer}>Server Backup</SelectItem>
-                )}
+                ))}
               </SelectContent>
             </Select>
 
