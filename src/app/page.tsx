@@ -35,7 +35,6 @@ export default async function Home() {
   const carouselItems = allPopular.length > 0 ? allPopular.slice(0, 5) : allLatest.slice(0, 5);
 
   const latestSection = allLatest.slice(0, 12); 
-  const completed = completedData?.completed_donghua || [];
 
   return (
     <div className="min-h-screen pb-24 bg-background">
@@ -108,25 +107,6 @@ export default async function Home() {
                     <DonghuaCard key={index} donghua={donghua} />
                     ))}
                 </div>
-            </section>
-        )}
-
-        {/* COMPLETED SERIES SECTION */}
-        {completed.length > 0 && (
-            <section className="animate-fade-in">
-            <div className="flex items-center justify-between mb-8">
-                <h2 className="text-2xl md:text-4xl font-bold tracking-tight text-white">Completed Series</h2>
-                <Link href="/completed">
-                <Button variant="ghost" size="sm" className="text-muted-foreground hover:text-primary transition-colors">
-                    View All <ChevronRight className="ml-1 h-4 w-4" />
-                </Button>
-                </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-10">
-                {completed.slice(0, 12).map((donghua: any, index: number) => (
-                <DonghuaCard key={index} donghua={donghua} />
-                ))}
-            </div>
             </section>
         )}
 

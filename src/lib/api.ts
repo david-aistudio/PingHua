@@ -47,7 +47,8 @@ async function getOrUpdateCache<T>(path: string, fetchFn: () => Promise<T | null
     // SAFETY CHECK: Jangan simpen kalau datanya ZONK / KOSONG
     const isEmpty = !freshData || 
                     (Array.isArray((freshData as any).data) && (freshData as any).data.length === 0) ||
-                    (Array.isArray((freshData as any).latest_release) && (freshData as any).latest_release.length === 0);
+                    (Array.isArray((freshData as any).latest_release) && (freshData as any).latest_release.length === 0) ||
+                    (Array.isArray((freshData as any).episodes_list) && (freshData as any).episodes_list.length === 0);
 
     if (freshData && !isEmpty) {
         await supabaseAdmin.from('api_cache').upsert({
