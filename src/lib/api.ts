@@ -66,16 +66,16 @@ export const api = {
   getHome: async () => getOrUpdateCache<any>('home', async () => {
       const data = await animexin.getHomeData();
       return { 
-          popular: data.popular, // 5 item
-          latest_release: data.latest, // 16 item
-          recommendation: data.recommendation // 14 item
+          popular: data?.popular || [], 
+          latest_release: data?.latest || [], 
+          recommendation: data?.recommendation || []
       };
   }),
 
   getOngoing: async (page: number = 1) => getOrUpdateCache<any>(`ongoing/${page}`, async () => {
       // Animexin Ongoing = Home Latest with Pagination
       const data = await animexin.getHomeData(page);
-      return { ongoing_donghua: data.latest };
+      return { ongoing_donghua: data?.latest || [] };
   }),
 
   getCompleted: async (page: number = 1) => getOrUpdateCache<any>(`completed/${page}`, async () => {

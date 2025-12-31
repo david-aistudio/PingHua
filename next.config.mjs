@@ -20,8 +20,6 @@ const nextConfig = {
   // Puppeteer wajib external di serverless
   serverExternalPackages: ['puppeteer', 'puppeteer-extra', 'puppeteer-extra-plugin-stealth'],
 
-  optimizeFonts: false,
-
   images: {
     remotePatterns: [
       {
