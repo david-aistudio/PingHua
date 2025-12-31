@@ -181,7 +181,7 @@ export const animexin = {
                 const detailData = await animexin.getDetail(seriesSlug);
                 if (detailData && detailData.episodes_list.length > 0) {
                     fullList = detailData.episodes_list;
-                    parentPoster = detailData.poster;
+                    parentPoster = detailData.poster || ""; // FIX: Fallback string kosong
                     // Auto-Heal Cache Detail
                     supabaseAdmin.from('api_cache').upsert({
                         path: `detail/${seriesSlug.replace('anime/', '')}`,
