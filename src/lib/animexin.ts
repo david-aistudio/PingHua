@@ -143,18 +143,30 @@ export const animexin = {
 
             // --- REVOLUSI: Pake WP-JSON API buat List Episode ---
             try {
-                // 1. Cari Category ID dari Judul Anime
-                const catSearchUrl = `${BASE_URL}/wp-json/wp/v2/categories?search=${encodeURIComponent(animeTitle)}`;
-                const catRes = await fetch(catSearchUrl, { headers: HEADERS });
+                // 1. Cari Category ID pake Slug (Paling Akurat)
+                const catUrl = `${BASE_URL}/wp-json/wp/v2/categories?slug=${cleanSlug.replace('anime/', '')}`;
+                const catRes = await fetch(catUrl, { headers: HEADERS });
                 if (catRes.ok) {
                     const cats = await catRes.json();
-                    // Cari yang paling mirip judulnya
-                    const bestCat = cats.find((c: any) => animeTitle.toLowerCase().includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(animeTitle.toLowerCase()));
+                    let targetCat = cats[0];
+
+                    // Fallback: Jika slug gak match, baru cari pake Title
+                    if (!targetCat) {
+                        const catSearchUrl = `${BASE_URL}/wp-json/wp/v2/categories?search=${encodeURIComponent(animeTitle)}`;
+                        const catSearchRes = await fetch(catSearchUrl, { headers: HEADERS });
+                        if (catSearchRes.ok) {
+                            const searchCats = await catSearchRes.json();
+                            targetCat = searchCats.find((c: any) => 
+                                animeTitle.toLowerCase() === c.name.toLowerCase() || 
+                                c.name.toLowerCase().includes(animeTitle.toLowerCase())
+                            );
+                        }
+                    }
                     
-                    if (bestCat) {
-                        console.log(`[JackpotV4] 🎯 Using Category API for ${animeTitle} (ID: ${bestCat.id})`);
+                    if (targetCat) {
+                        console.log(`[JackpotV4] 🎯 Using Category API for ${animeTitle} (ID: ${targetCat.id})`);
                         // 2. Tarik Episode (Post) dari Kategori ini
-                        const postApiUrl = `${BASE_URL}/wp-json/wp/v2/posts?categories=${bestCat.id}&per_page=100`;
+                        const postApiUrl = `${BASE_URL}/wp-json/wp/v2/posts?categories=${targetCat.id}&per_page=100`;
                         const postRes = await fetch(postApiUrl, { headers: HEADERS });
                         if (postRes.ok) {
                             const posts = await postRes.json();
@@ -314,19 +326,32 @@ export const animexin = {
                 });
             }
 
+            // --- BRUTAL PARENT DETECTOR ---
             let seriesLink = '';
+            const baseSlug = slug.replace(/-episode-.*/, '').replace(/-end$/, '');
+            
             $('a').each((i, el) => {
-                const txt = $(el).text().trim();
+                const txt = $(el).text().trim().toLowerCase();
                 const href = $(el).attr('href');
-                if (href && (txt.includes(animeTitle) || txt.toLowerCase().includes('all episodes')) && !href.includes('episode')) {
-                    seriesLink = href;
-                    return false;
+                
+                if (href && !href.includes('episode')) {
+                    // Kriteria 1: Link yang teksnya mengandung "All Episodes"
+                    if (txt.includes('all episodes')) {
+                        seriesLink = href;
+                        return false;
+                    }
+                    // Kriteria 2: Link yang slug-nya bener-bener sama ama baseSlug kita
+                    if (href.includes(`/${baseSlug}/`)) {
+                        seriesLink = href;
+                        return false;
+                    }
                 }
             });
 
-            if (!seriesLink) {
-                const base = slug.replace(/-episode-\d+.*/, '');
-                seriesLink = `${BASE_URL}/${base}/`;
+            // Jika masih gagal, paksa pake baseSlug tebakan (Paling Aman)
+            if (!seriesLink || seriesLink.includes('season')) {
+                // Jangan pake yang ada kata 'season' kalau kita gak yakin itu season yang bener
+                seriesLink = `${BASE_URL}/${baseSlug}/`;
             }
 
             let fullList: any[] = [];
