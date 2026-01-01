@@ -118,13 +118,33 @@ export function DetailContent({ donghua, slug }: DetailContentProps) {
                         </Button>
                     </div>
 
-                    <div className="space-y-3 pt-6 border-t border-black/5">
-                        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
-                            <div className="w-1 h-3 bg-primary rounded-full" aria-hidden="true" /> Storyline
-                        </h3>
-                        <p className="text-muted-foreground leading-relaxed text-sm md:text-base font-medium max-w-3xl">
-                            {donghua.synopsis}
-                        </p>
+                    <div className="space-y-4 pt-8 border-t border-black/5">
+                        <div className="flex items-center gap-2 text-foreground font-black text-[11px] uppercase tracking-[0.2em]">
+                            <Info className="w-4 h-4 text-primary" aria-hidden="true" /> Storyline
+                        </div>
+                        <div className="space-y-4">
+                            {/* SMART BILINGUAL SYNOPSIS RENDERING */}
+                            {(() => {
+                                const text = donghua.synopsis || "";
+                                // Deteksi pemisah umum di Animexin (biasanya double newline atau keyword English)
+                                const parts = text.split(/(?=Synopsis:|\n\nAbout|\n\nStory)/i);
+                                
+                                return parts.map((part, i) => {
+                                    const isEnglish = /Synopsis:|About:|Story:|Previously:|Summary:/i.test(part) || i > 0;
+                                    
+                                    return (
+                                        <p key={i} className={cn(
+                                            "leading-relaxed font-medium transition-all",
+                                            isEnglish 
+                                                ? "text-muted-foreground/60 italic text-xs md:text-sm border-l-2 border-black/5 pl-4" 
+                                                : "text-muted-foreground text-sm md:text-base"
+                                        )}>
+                                            {part.replace(/Synopsis:|About:|Story:/i, '').trim()}
+                                        </p>
+                                    );
+                                });
+                            })()}
+                        </div>
                     </div>
 
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
