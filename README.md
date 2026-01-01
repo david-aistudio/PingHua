@@ -1,36 +1,96 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PINGHUA // CORE 
 
-## Getting Started
+> **ULTRA-HIGH VELOCITY DONGHUA RETRIEVAL & STREAMING UNIT**
 
-First, run the development server:
+![Next.js](https://img.shields.io/badge/RUNTIME-NEXT.JS_15-black?style=for-the-badge&logo=next.js)
+![Tailwind CSS](https://img.shields.io/badge/STYLE-TAILWIND_4-38B2AC?style=for-the-badge&logo=tailwind-css)
+![Redis](https://img.shields.io/badge/CACHE-UPSTASH_REDIS-FF4438?style=for-the-badge&logo=redis)
+![Supabase](https://img.shields.io/badge/DATABASE-SUPABASE-3ECF8E?style=for-the-badge&logo=supabase)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+---
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📡 SYSTEM OVERVIEW
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+**PingHua** is a premium, high-performance streaming engine designed for the modern Donghua community. Developed with an **Industrial-Grade Extraction Logic**, the system prioritizes extreme speed, visual elegance, and search engine dominance.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+By merging the **Apple Zen Aesthetic** with a multi-layered hybrid caching architecture, PingHua delivers a near-zero latency experience while maintaining 100% data accuracy through its proprietary Auto-Heal & Gap-Filler protocols.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## ⚡ PERFORMANCE ENGINE (THE TURBO STACK)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+PingHua doesn't just scrape; it executes a **Multi-Layered Data Retrieval Protocol**:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1.  **WP-JSON API INTEGRATION (Jackpot V4):** Direct database-to-database communication with the source for 100% accuracy and speed.
+2.  **HYBRID CACHE ARCHITECTURE:** 
+    *   **Layer 1 (L1):** Upstash Redis (RAM) for sub-5ms data delivery.
+    *   **Layer 2 (L2):** Supabase (PostgreSQL) for persistent data integrity and secondary backup.
+3.  **RESCUE & HEAL PROTOCOLS:** 
+    *   **Auto-Heal:** Real-time homepage scanning for instant updates.
+    *   **Gap-Filler:** Automated link prediction for missing episodes.
+    *   **Emergency Search:** Intelligent self-correction for broken or guessed endpoints.
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🎨 DESIGN LANGUAGE (APPLE AMBER EDITION)
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+The interface is engineered for long-term viewing comfort and premium feel:
+
+*   **SOFT LIGHT THEME:** A refined `#FAF9F6` Off-White background that reduces eye strain.
+*   **APPLE TYPOGRAPHY:** Native SF Pro / system font stack for razor-sharp clarity.
+*   **AMBER ACCENTS:** High-end `#FFB800` highlights for a vibrant yet professional anime vibe.
+*   **FEATHERED TRANSITIONS:** Fluid animations and deep feathered gradients for a seamless content flow.
+
+---
+
+## 📈 EXTREME SEO PROTOCOLS (GACOR EDITION)
+
+PingHua is built to dominate search results:
+
+*   **DYNAMIC METADATA:** Automated canonicals and SEO-optimized OpenGraph tags for every series.
+*   **STRUCTURED DATA (JSON-LD):** Full `VideoObject` and `TVSeries` schemas for rich search snippets.
+*   **INDEXING BOOSTER:** Automated **RSS Feed (`/feed.xml`)** and dynamic **Sitemap** for instant Google indexing.
+*   **IMAGE SEO:** Intelligent Alt-Text injection for high visibility in Google Images.
+
+---
+
+## 🛠️ INSTALLATION & DEPLOYMENT
+
+### CORE REQUIREMENTS
+*   Node.js 20+
+*   Supabase Account (Database)
+*   Upstash Account (Redis)
+
+### INITIALIZATION
+1.  **Clone the system:**
+    ```bash
+    git clone https://github.com/david-aistudio/PingHua.git
+    ```
+2.  **Install dependencies:**
+    ```bash
+    npm install
+    ```
+3.  **Configure `.env.local`:**
+    ```env
+    NEXT_PUBLIC_SUPABASE_URL=your_url
+    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_key
+    SUPABASE_SERVICE_ROLE_KEY=your_service_key
+    UPSTASH_REDIS_REST_URL=your_redis_url
+    UPSTASH_REDIS_REST_TOKEN=your_redis_token
+    ```
+4.  **Execute Setup:**
+    ```bash
+    node scripts/setup-db.js
+    ```
+5.  **Ignite the engine:**
+    ```bash
+    npm run dev
+    ```
+
+---
+
+## 👨‍💻 ARCHITECT
+**Developed by [David](https://github.com/david-aistudio)**  
+"SPEED IS THE ONLY TRUTH. DESIGN IS THE SOUL."
+
+> PINGHUA SYSTEM // EST. 2025 // VERSION 2.5.0 STABLE

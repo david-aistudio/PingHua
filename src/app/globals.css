@@ -1,73 +1,64 @@
 @import "tailwindcss";
 
 @theme {
-  /* COLORS - APPLE OLED STYLE */
-  --color-background: #000000;
-  --color-foreground: #ffffff;
+  /* COLORS - CONTROLLED APPLE LIGHT (Soft Warmth) */
+  --color-background: #FAF9F6; /* Premium Off-White (Jackpot: Comfort for eyes) */
+  --color-foreground: #1D1D1F; /* Apple Graphite */
   
-  --color-card: #0a0a0a;
-  --color-card-foreground: #ffffff;
+  --color-card: #FFFFFF;
+  --color-card-foreground: #1D1D1F;
   
-  --color-popover: #0a0a0a;
-  --color-popover-foreground: #ffffff;
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #1D1D1F;
   
-  --color-primary: #ffffff;
+  --color-primary: #FFB800; /* Honey Amber */
   --color-primary-foreground: #000000;
   
-  --color-secondary: #1a1a1a;
-  --color-secondary-foreground: #ffffff;
+  --color-secondary: #F2F2F7; /* Apple System Gray 6 */
+  --color-secondary-foreground: #1D1D1F;
   
-  --color-muted: #1a1a1a;
-  --color-muted-foreground: #a3a3a3;
+  --color-muted: #F2F2F7;
+  --color-muted-foreground: #86868B;
   
-  --color-accent: #262626;
-  --color-accent-foreground: #ffffff;
+  --color-accent: #FFF9E5; 
+  --color-accent-foreground: #FFB800;
   
-  --color-destructive: #ef4444;
-  --color-destructive-foreground: #ffffff;
+  --color-destructive: #FF3B30;
+  --color-destructive-foreground: #FFFFFF;
   
-  --color-border: #262626; /* Lebih tegas */
-  --color-input: #262626;
-  --color-ring: #ffffff;
+  --color-border: rgba(0, 0, 0, 0.06); /* Very subtle border */
+  --color-input: #F2F2F7;
+  --color-ring: #FFB800;
 
-  /* RADIUS */
-  --radius-lg: 0.5rem;
-  --radius-md: calc(0.5rem - 2px);
-  --radius-sm: calc(0.5rem - 4px);
+  --radius-lg: 1.5rem;
+  --radius-md: 1rem;
+  --radius-sm: 0.75rem;
 
-  /* ANIMATIONS */
-  --animate-accordion-down: accordion-down 0.2s ease-out;
-  --animate-accordion-up: accordion-up 0.2s ease-out;
-  --animate-fade-in: fade-in 0.5s ease-out;
-
-  @keyframes accordion-down {
-    from { height: 0 }
-    to { height: var(--radix-accordion-content-height) }
-  }
-  @keyframes accordion-up {
-    from { height: var(--radix-accordion-content-height) }
-    to { height: 0 }
-  }
-  @keyframes fade-in {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  --animate-fade-in: fade-in 0.6s cubic-bezier(0.25, 0.1, 0.25, 1);
 }
 
 /* UTILITIES */
 @layer utilities {
   .glass {
-    background-color: rgba(0, 0, 0, 0.6);
-    backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: rgba(250, 249, 246, 0.8); /* Match background */
+    backdrop-filter: saturate(180%) blur(20px);
+    -webkit-backdrop-filter: saturate(180%) blur(20px);
   }
   
+  /* Elevasi yang terkendali */
+  .shadow-apple {
+    box-shadow: 
+        0 2px 4px rgba(0, 0, 0, 0.02), 
+        0 10px 20px rgba(0, 0, 0, 0.04);
+  }
+  
+  .shadow-apple-hover {
+    box-shadow: 
+        0 20px 40px rgba(0, 0, 0, 0.06);
+  }
+
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
-  }
-  .scrollbar-hide {
-    -ms-overflow-style: none;
-    scrollbar-width: none;
   }
 }
 
@@ -76,13 +67,8 @@
   body {
     background-color: var(--color-background);
     color: var(--color-foreground);
-    font-family: var(--font-sans), system-ui, sans-serif;
+    font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Icons", "Helvetica Neue", Helvetica, Arial, sans-serif;
     -webkit-font-smoothing: antialiased;
+    letter-spacing: -0.015em;
   }
-  
-  /* Lenis CSS */
-  html.lenis, html.lenis body { height: auto; }
-  .lenis.lenis-smooth { scroll-behavior: auto !important; }
-  .lenis.lenis-smooth [data-lenis-prevent] { overscroll-behavior: contain; }
-  .lenis.lenis-stopped { overflow: hidden; }
 }

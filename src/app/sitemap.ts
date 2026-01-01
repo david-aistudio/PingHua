@@ -21,21 +21,20 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     .limit(5000);
 
   const dynamicRoutes: MetadataRoute.Sitemap = (pages || []).map((page) => {
-    // Bersihin path dari 'anime/donghua/' biar jadi URL bersih
-    const cleanSlug = page.path.replace('anime/donghua/', '').replace(/^\/|\/$/g, '');
+    // Path di database: 'detail/slug' atau 'episode/slug'
+    const cleanPath = page.path.replace(/^\/|\/$/g, '');
     
     // Tentukan prioritas
-    const isDetail = cleanSlug.includes('detail/');
-    const isEpisode = cleanSlug.includes('episode/');
+    const isDetail = cleanPath.startsWith('detail/');
+    const isEpisode = cleanPath.startsWith('episode/');
     
-    // Filter: Cuma masukin Detail dan Episode ke sitemap
     if (!isDetail && !isEpisode) return null;
 
     return {
-      url: `${BASE_URL}/${cleanSlug}`,
+      url: `${BASE_URL}/${cleanPath}`,
       lastModified: new Date(page.timestamp || Date.now()),
-      changeFrequency: isDetail ? 'daily' : 'weekly', // Detail sering update eps baru
-      priority: isDetail ? 0.9 : 0.7,
+      changeFrequency: isDetail ? 'daily' : 'weekly',
+      priority: isDetail ? 0.9 : 0.6,
     };
   }).filter(Boolean) as MetadataRoute.Sitemap;
 

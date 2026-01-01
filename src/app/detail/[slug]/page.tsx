@@ -6,6 +6,7 @@ import { redirect } from 'next/navigation';
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
   const data = await api.getDetail(slug);
+  const cleanSlug = slug.replace(/^\/|\/$/g, '');
   
   if (slug.includes('-episode-')) return { title: 'Redirecting...' };
 
@@ -13,22 +14,36 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     return { title: 'Not Found - PingHua' };
   }
 
+  const dynamicKeywords = data.genres?.map(g => g.name).join(', ') || "";
+
   return {
     title: `Nonton ${data.title} Sub Indo Full Episode - PingHua`,
     description: data.synopsis?.slice(0, 160) || `Streaming ${data.title} Subtitle Indonesia kualitas HD gratis tanpa iklan.`,
+    alternates: {
+        canonical: `https://pinghua.qzz.io/detail/${cleanSlug}`,
+    },
     keywords: [
       `nonton ${data.title}`,
       `${data.title} sub indo`,
       `${data.title} donghua`,
       `streaming ${data.title}`,
-      `download ${data.title}`,
-      "donghua sub indo",
+      dynamicKeywords,
+      "donghua sub indo terbaru",
       "tanpa iklan"
     ],
     openGraph: {
-      images: [data.poster],
+      images: [
+        {
+            url: data.poster,
+            width: 800,
+            height: 1200,
+            alt: `Nonton ${data.title} Sub Indo`,
+        }
+      ],
       title: `Nonton ${data.title} Sub Indo`,
-      description: data.synopsis?.slice(0, 100),
+      description: data.synopsis?.slice(0, 150),
+      url: `https://pinghua.qzz.io/detail/${cleanSlug}`,
+      type: 'video.tv_show',
     },
   };
 }

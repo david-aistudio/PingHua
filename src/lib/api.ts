@@ -1,64 +1,72 @@
 import { animexin } from './animexin';
 import { supabaseAdmin } from './supabase-server';
+import { redis } from './redis';
 import { DonghuaDetail, EpisodeDetail } from './types';
 
 export * from './types';
 
-// FUNGSI CACHE WRAPPER
+// FUNGSI CACHE WRAPPER (HYBRID REDIS + SUPABASE)
 async function getOrUpdateCache<T>(path: string, fetchFn: () => Promise<T | null>): Promise<T | null> {
-  const cleanPath = path.replace(/^\/|\/$/g, '');
+  const cleanPath = path.replace(/^\/|\/$/g, '').replace(/\//g, ':'); // Ganti / jadi : buat redis key
   try {
-    // 1. Ambil dari Supabase
-    const { data: cached } = await supabaseAdmin.from('api_cache').select('data, timestamp').eq('path', cleanPath).single();
+    // 1. LAPIS 1: Cek REDIS (RAM - Super Fast)
+    const redisData = await redis.get<T>(cleanPath);
+    if (redisData) {
+        // console.log(`[TurboCache] 🚀 RAM HIT: ${cleanPath}`);
+        return redisData;
+    }
+
+    // 2. LAPIS 2: Cek SUPABASE (DB - Backup)
+    const { data: cached } = await supabaseAdmin.from('api_cache').select('data, timestamp').eq('path', cleanPath.replace(/:/g, '/')).single();
     
     const now = Date.now();
     let ttl = 1000 * 60 * 60 * 24; // Default 24 jam buat detail/umum
 
-    // 2. Tentukan TTL Pintar
+    // Tentukan TTL
     if (cleanPath === 'home' || cleanPath.startsWith('ongoing')) {
-        ttl = 1000 * 60 * 10; // 10 Menit buat Home/Ongoing List
-    } else if (cleanPath.startsWith('detail/')) {
-        // Cek apakah di data cache statusnya "Completed"
+        ttl = 1000 * 60 * 20; // 20 Menit
+    } else if (cleanPath.startsWith('detail:')) {
         const isCompleted = cached?.data?.status?.toLowerCase().includes('completed') || cached?.data?.status?.toLowerCase().includes('tamat');
-        ttl = isCompleted ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 60 * 2; // 2 Jam buat Ongoing, 7 Hari buat Tamat
+        ttl = isCompleted ? 1000 * 60 * 60 * 24 * 7 : 1000 * 60 * 20; 
     }
 
     if (cached && cached.data) {
-        // Cek apakah sudah "Basi" (Stale)
         const isStale = (now - (cached.timestamp || 0)) > ttl;
-
-        if (isStale) {
-            console.log(`[SmartCache] 🍂 Stale detected: ${cleanPath}. Refreshing in background...`);
-            // Update Background (User gak nunggu)
+        
+        // Simpan ke Redis biar next request lebih cepet
+        if (!isStale) {
+            redis.set(cleanPath, cached.data, Math.floor(ttl / 1000));
+        } else {
+            // Update Background (Stale)
             fetchFn().then(fresh => { 
                 if (fresh) {
-                    supabaseAdmin.from('api_cache').upsert({ path: cleanPath, data: fresh, timestamp: now })
-                    .then(() => console.log(`[SmartCache] ✅ Auto-Healed: ${cleanPath}`));
+                    const freshTtl = Math.floor(ttl / 1000);
+                    supabaseAdmin.from('api_cache').upsert({ path: cleanPath.replace(/:/g, '/'), data: fresh, timestamp: now }).then(() => {});
+                    redis.set(cleanPath, fresh, freshTtl);
                 }
             }).catch(() => {});
         }
         return cached.data as T;
     }
 
-    // 3. Kalau DB Kosong Melompong (First Time)
-    console.log(`[SmartCache] 💨 DB Miss: ${cleanPath}. Scraping source...`);
+    // 3. LAPIS 3: SCRAPING SOURCE (First Time)
+    // console.log(`[TurboCache] 💨 MISS: ${cleanPath}. Fetching source...`);
     const freshData = await fetchFn();
     
-    // SAFETY CHECK: Jangan simpen kalau datanya ZONK / KOSONG
     const isEmpty = !freshData || 
                     (Array.isArray((freshData as any).data) && (freshData as any).data.length === 0) ||
                     (Array.isArray((freshData as any).latest_release) && (freshData as any).latest_release.length === 0) ||
                     (Array.isArray((freshData as any).episodes_list) && (freshData as any).episodes_list.length === 0);
 
     if (freshData && !isEmpty) {
-        await supabaseAdmin.from('api_cache').upsert({
-            path: cleanPath,
-            data: freshData,
-            timestamp: now
-        });
+        const freshTtlSeconds = Math.floor(ttl / 1000);
+        await Promise.all([
+            supabaseAdmin.from('api_cache').upsert({ path: cleanPath.replace(/:/g, '/'), data: freshData, timestamp: now }),
+            redis.set(cleanPath, freshData, freshTtlSeconds)
+        ]);
         return freshData;
     }
-    return freshData; // Balikin aja walau kosong, tapi gak masuk DB (biar diretry user berikutnya)
+    return freshData;
   } catch (e) { return null; }
 }
 

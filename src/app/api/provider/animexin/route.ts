@@ -8,19 +8,26 @@ export async function POST(request: Request) {
 
     if (action === 'search') {
         const data = await animexin.search(query || '');
-        return NextResponse.json({ status: 'success', data: data.data });
+        return NextResponse.json({ status: 'success', data: data.data }, {
+            headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=59' }
+        });
     }
 
     if (action === 'detail' && url) {
         const data = await animexin.getDetail(url);
-        return NextResponse.json({ status: 'success', data });
+        return NextResponse.json({ status: 'success', data }, {
+            headers: { 'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=59' }
+        });
     }
 
     if (action === 'episode' && url) {
         // Extract slug dari URL
         const slug = url.replace('https://animexin.dev', '').replace(/^\/|\/$/g, '');
         const data = await animexin.getEpisode(slug);
-        return NextResponse.json({ status: 'success', data });
+        // Episode cache lebih pendek biar kalau ada server rusak cepet ketauan
+        return NextResponse.json({ status: 'success', data }, {
+            headers: { 'Cache-Control': 'public, s-maxage=120, stale-while-revalidate=59' }
+        });
     }
 
     return NextResponse.json({ error: 'Invalid action' }, { status: 400 });

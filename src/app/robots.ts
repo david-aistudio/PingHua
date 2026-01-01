@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: '*',
       allow: '/',
-      disallow: ['/private/', '/admin/'],
+      disallow: ['/private/', '/admin/', '/search/', '/history/'],
     },
     sitemap: 'https://pinghua.qzz.io/sitemap.xml',
   };

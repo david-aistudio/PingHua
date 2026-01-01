@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { MessageSquare, Send, Loader2, List, ThumbsUp, ThumbsDown, Share2 } from 'lucide-react';
+import { MessageSquare, Send, Loader2, List, ThumbsUp, ThumbsDown, Share2, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 import { api, EpisodeDetail } from '@/lib/api';
 import { history } from '@/lib/history';
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { createClient } from '@/lib/supabase-client';
@@ -21,17 +22,14 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
   const supabase = createClient();
   
   const [selectedServer, setSelectedServer] = useState('');
-  // Use a safer default for name, handling SSR/hydration mismatch
   const [commentName, setCommentName] = useState('');
   const [commentContent, setCommentContent] = useState('');
   const [replyTo, setReplyTo] = useState<string | null>(null);
 
-  // Load name from localStorage only on client mount
   useEffect(() => {
     setCommentName(localStorage.getItem('ph_anon_name') || '');
   }, []);
 
-  // Fetch Video Votes
   const { data: videoVotes } = useQuery({
     queryKey: ['video-votes', slug],
     queryFn: async () => {
@@ -53,7 +51,6 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
     }
   };
 
-  // Fetch Comments logic...
   const { data: comments, isLoading: loadingComments } = useQuery({
     queryKey: ['comments', slug],
     queryFn: async () => {
@@ -70,7 +67,7 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
 
   const postComment = useMutation({
     mutationFn: async ({ content, name, parentId }: { content: string, name: string, parentId?: string }) => {
-        const finalName = name || 'Kultivator Anonim';
+        const finalName = name || 'User Anonim';
         localStorage.setItem('ph_anon_name', finalName);
         const { error } = await supabase.from('comments').insert({
             name: finalName,
@@ -97,64 +94,39 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
   const rootComments = comments?.filter((c: any) => !c.parent_id).reverse() || [];
   const getReplies = (parentId: string) => comments?.filter((c: any) => c.parent_id === parentId) || [];
 
-  // STATE BARU BUAT RESCUE DATA
   const [localEpisode, setLocalEpisode] = useState<EpisodeDetail | null>(episode);
   const [isRescuing, setIsRescuing] = useState(false);
 
-  // Init Player & History & RESCUE MISSION
   useEffect(() => {
-    // 1. Cek Data (Rescue kalau kosong)
     const checkAndRescue = async () => {
         if (!localEpisode || !localEpisode.streaming || localEpisode.streaming.servers.length === 0) {
             setIsRescuing(true);
             try {
-                // Pake API Route Auratail (Internal) buat rescue biar aman dari CORS
-                const res = await fetch('/api/provider/auratail', {
+                const res = await fetch('/api/provider/animexin', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: 'episode', url: `https://auratail.vip/${slug}/` })
+                    body: JSON.stringify({ action: 'episode', url: `https://animexin.dev/${slug}/` })
                 });
                 const json = await res.json();
-
                 if (json.status === 'success' && json.data) {
-                    console.log('✅ Rescue Success!');
-                    const cleanData = json.data;
-                    setLocalEpisode(cleanData);
-                    
-                    // Simpan ke DB
-                    fetch('/api/save', {
-                        method: 'POST',
-                        body: JSON.stringify({ path: `episode/${slug}`, data: cleanData })
-                    });
+                    setLocalEpisode(json.data);
                 }
-            } catch (e) {
-                console.error('💀 Rescue Failed:', e);
-            } finally {
-                setIsRescuing(false);
-            }
+            } catch (e) {} finally { setIsRescuing(false); }
         }
     };
-
     checkAndRescue();
   }, [slug]);
 
-  // 2. Pilih Server (Auto Select First)
   useEffect(() => {
     if (localEpisode && localEpisode.streaming?.servers?.length > 0) {
-      // Default pilih server pertama (biasanya HD)
       if (!selectedServer) setSelectedServer(localEpisode.streaming.servers[0].url);
-
-      // Save History
       if (localEpisode.donghua_details && slug) {
-        // Cari poster yang bener (bukan base64 lazyload)
-        const realPoster = localEpisode.donghua_details.poster || "";
-        
         history.add({
           slug: localEpisode.donghua_details.slug,
           title: localEpisode.donghua_details.title,
           episode: localEpisode.episode,
           episodeSlug: slug,
-          poster: realPoster,
+          poster: localEpisode.donghua_details.poster || "",
         });
       }
     }
@@ -162,16 +134,9 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
 
   const episodeData = localEpisode || episode;
 
-  if (isRescuing) {
-      return <div className="min-h-screen bg-black flex flex-col items-center justify-center text-white space-y-4">
-          <Loader2 className="w-10 h-10 animate-spin text-primary" />
-          <p className="animate-pulse text-sm text-gray-400">Sedang mengambil video dari server...</p>
-      </div>
-  }
-
   if (!episodeData || !episodeData.streaming || episodeData.streaming.servers.length === 0) {
-      return <div className="min-h-screen bg-black flex items-center justify-center text-white">
-          <p>Video tidak ditemukan. Coba refresh atau lapor admin.</p>
+      return <div className="min-h-screen bg-background flex items-center justify-center">
+          <p className="text-muted-foreground font-semibold">Video tidak tersedia</p>
       </div>
   }
 
@@ -180,199 +145,178 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
   const donghuaSlug = episodeData.donghua_details?.slug || slug?.replace(/-episode-\d+.*/, '');
 
   return (
-    <div className="min-h-screen pb-24 bg-background text-foreground font-sans">
+    <div className="min-h-screen pb-32 bg-background selection:bg-primary/30">
       
-      {/* PLAYER UTAMA */}
-      <div className="sticky top-0 z-50 w-full bg-black shadow-2xl border-b border-white/10">
-        <div className="w-full aspect-video mx-auto max-w-[100vw] relative group">
+      {/* Player Section - Minimalist Black */}
+      <div className="w-full bg-black shadow-lg overflow-hidden md:mt-0">
+        <div className="container mx-auto max-w-6xl aspect-video relative">
           {selectedServer ? (
-            <iframe 
-                src={selectedServer} 
-                className="w-full h-full" 
-                allowFullScreen 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            />
+            <iframe src={selectedServer} className="w-full h-full" allowFullScreen />
           ) : (
-            <div className="flex items-center justify-center h-full text-gray-500">Pilih Server...</div>
+            <div className="flex items-center justify-center h-full text-white/10 font-bold text-xs tracking-widest">LOADING...</div>
           )}
         </div>
       </div>
 
-      <div className="container mx-auto px-4 py-6">
-        {/* Title and Controls */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-            <h1 className="text-xl md:text-2xl font-bold leading-tight">{episodeData.episode}</h1>
-            <div className="flex items-center gap-2">
-                <div className="flex bg-neutral-900 rounded-full p-1 border border-white/10">
+      <div className="container mx-auto px-4 py-8 md:py-12">
+        {/* Title and Stats */}
+        <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-10">
+            <div className="space-y-2">
+                <Link href={`/detail/${donghuaSlug}`} className="text-[11px] font-bold text-primary uppercase tracking-widest hover:underline">
+                    {episodeData.donghua_details?.title || 'Kembali ke Series'}
+                </Link>
+                <h1 className="text-2xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">{episodeData.episode}</h1>
+            </div>
+
+            <div className="flex items-center gap-3">
+                <div className="flex bg-white rounded-full p-1 border border-black/5 shadow-soft">
                     <button 
                         onClick={() => handleVideoVote('likes')}
-                        className="flex items-center gap-2 px-4 py-1.5 hover:bg-white/10 rounded-full transition-colors text-xs font-bold"
+                        className="flex items-center gap-2 px-5 py-2 hover:bg-orange-50 rounded-full transition-all text-xs font-bold"
                     >
                         <ThumbsUp className="w-4 h-4 text-primary" /> {videoVotes?.likes || 0}
                     </button>
-                    <div className="w-px h-4 bg-white/10 self-center"></div>
+                    <div className="w-px h-4 bg-gray-100 self-center"></div>
                     <button 
                         onClick={() => handleVideoVote('dislikes')}
-                        className="flex items-center gap-2 px-4 py-1.5 hover:bg-white/10 rounded-full transition-colors text-xs font-bold"
+                        className="flex items-center gap-2 px-5 py-2 hover:bg-red-50 rounded-full transition-all text-xs font-bold"
                     >
                         <ThumbsDown className="w-4 h-4 text-red-500" /> {videoVotes?.dislikes || 0}
                     </button>
                 </div>
-                <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="rounded-full border-white/20"
-                    onClick={() => {
-                        const shareData = {
-                            title: `Nonton ${episode.episode}`,
-                            text: `Seru banget nih eps ini! Nonton di PingHua.`,
-                            url: window.location.href,
-                        };
-                        if (navigator.share) navigator.share(shareData);
-                        else {
-                            navigator.clipboard.writeText(window.location.href);
-                            toast.success("Link disalin!");
-                        }
-                    }}
-                >
+                <Button variant="outline" size="icon" className="w-11 h-11 rounded-full border-black/5 bg-white shadow-soft" onClick={() => {
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success("Link disalin!");
+                }}>
                     <Share2 className="w-4 h-4" />
                 </Button>
             </div>
         </div>
         
-        <div className="flex flex-wrap gap-4 mb-10 items-center justify-between">
-          <div className="flex flex-wrap gap-4 items-center">
-            {/* SERVER SELECTOR */}
+        {/* Controls Bar */}
+        <div className="flex flex-wrap gap-4 mb-12 items-center justify-between bg-white p-4 rounded-3xl border border-black/5 shadow-soft">
+          <div className="flex flex-wrap gap-3 items-center">
             <Select value={selectedServer} onValueChange={setSelectedServer}>
-              <SelectTrigger className="w-[180px] rounded-full border-white/20 bg-neutral-900 text-xs">
+              <SelectTrigger className="w-[180px] h-11 rounded-full border-none bg-secondary font-bold text-xs tracking-tight">
                 <SelectValue placeholder="Pilih Server" />
               </SelectTrigger>
-              <SelectContent className="bg-black border-white/20">
+              <SelectContent className="rounded-2xl border-black/5 shadow-2xl">
                 {episodeData.streaming.servers.map((s, i) => (
-                    <SelectItem key={i} value={s.url} className="text-xs">
-                        {s.name || `Server ${i+1}`}
+                    <SelectItem key={i} value={s.url} className="text-xs font-semibold">
+                        Server: {s.name || `Unit ${i+1}`}
                     </SelectItem>
                 ))}
               </SelectContent>
             </Select>
 
-            {/* Nav Buttons */}
             <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="rounded-full border-white/20 px-6" onClick={() => prevEpisode && router.push(`/episode/${prevEpisode.slug}`)} disabled={!prevEpisode}>Prev</Button>
-                <Button size="sm" variant="outline" className="rounded-full border-white/20 px-6" onClick={() => nextEpisode && router.push(`/episode/${nextEpisode.slug}`)} disabled={!nextEpisode}>Next</Button>
+                <Button 
+                    variant="outline" 
+                    className="h-11 rounded-full border-primary/20 text-primary hover:bg-primary hover:text-white px-6 font-bold text-xs" 
+                    onClick={() => prevEpisode && router.push(`/episode/${prevEpisode.slug}`)} 
+                    disabled={!prevEpisode}
+                >
+                    <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                </Button>
+                <Button 
+                    variant="outline" 
+                    className="h-11 rounded-full border-primary/20 text-primary hover:bg-primary hover:text-white px-6 font-bold text-xs" 
+                    onClick={() => nextEpisode && router.push(`/episode/${nextEpisode.slug}`)} 
+                    disabled={!nextEpisode}
+                >
+                    Next <ChevronRight className="w-4 h-4 ml-1" />
+                </Button>
             </div>
           </div>
 
           <Link href={`/detail/${donghuaSlug}`}>
-            <Button variant="outline" className="text-xs font-bold uppercase tracking-widest text-primary border-primary/30 hover:bg-primary/10 rounded-full px-6 transition-all">Detail Series</Button>
+            <Button className="h-11 rounded-full bg-black text-white hover:bg-primary hover:text-black px-8 font-bold text-xs">Detail Series</Button>
           </Link>
         </div>
 
-        <Tabs defaultValue="comments" className="w-full">
-            <TabsList className="w-full justify-start bg-transparent border-b border-white/10 p-0 h-12 rounded-none gap-8 mb-8">
-                <TabsTrigger value="comments" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary text-gray-400 font-bold uppercase text-xs tracking-widest pb-3 transition-all">
-                    <MessageSquare className="w-4 h-4 mr-2" /> Diskusi
+        {/* Interaction Tabs */}
+        <Tabs defaultValue="episodes" className="w-full">
+            <TabsList className="w-full justify-start bg-secondary/50 p-1 rounded-2xl h-14 mb-10 border border-black/5">
+                <TabsTrigger value="episodes" className="flex-1 md:flex-none md:px-10 h-full rounded-xl font-bold text-xs tracking-tight data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    <List className="w-4 h-4 mr-2" /> Daftar Episode
                 </TabsTrigger>
-                <TabsTrigger value="episodes" className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:text-primary text-gray-400 font-bold uppercase text-xs tracking-widest pb-3 transition-all">
-                    <List className="w-4 h-4 mr-2" /> Episode
+                <TabsTrigger value="comments" className="flex-1 md:flex-none md:px-10 h-full rounded-xl font-bold text-xs tracking-tight data-[state=active]:bg-white data-[state=active]:text-primary data-[state=active]:shadow-sm">
+                    <MessageSquare className="w-4 h-4 mr-2" /> Diskusi
                 </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="comments">
-                {/* FORM KOMEN ANONIM */}
-                <div className="space-y-4 mb-12 bg-neutral-900/50 p-6 rounded-3xl border border-white/10 shadow-xl">
-                    <div className="flex flex-col sm:flex-row gap-3">
+            <TabsContent value="comments" className="animate-fade-in">
+                <div className="bg-white p-6 md:p-10 rounded-[2.5rem] border border-black/5 shadow-soft mb-10">
+                    <div className="flex flex-col sm:flex-row gap-4 mb-12">
                         <Input 
-                            placeholder="Nama Lu (Opsional)" 
+                            placeholder="Nama Kamu" 
                             value={commentName}
                             onChange={(e) => setCommentName(e.target.value)}
-                            className="sm:w-[200px] bg-black/40 border-white/10 rounded-full text-xs h-11 px-5"
+                            className="sm:w-[220px] bg-secondary border-none rounded-2xl h-14 px-6 font-bold text-xs"
                         />
-                        <div className="flex-1 relative group">
+                        <div className="flex-1 relative">
                             <Input 
-                                placeholder="Tulis teorimu di sini..." 
+                                placeholder="Bagikan pendapatmu..." 
                                 value={commentContent}
                                 onChange={(e) => setCommentContent(e.target.value)}
-                                className="bg-black/40 border-white/10 rounded-full h-11 pl-5 pr-14 transition-all focus:border-primary/50"
+                                className="bg-secondary border-none rounded-2xl h-14 pl-6 pr-16 font-bold text-xs"
                             />
                             <button 
                                 onClick={() => postComment.mutate({ content: commentContent, name: commentName })}
                                 disabled={!commentContent || postComment.isPending}
-                                className="absolute right-2 top-1.5 h-8 w-8 rounded-full bg-transparent hover:bg-white/5 flex items-center justify-center text-primary transition-transform active:scale-90 disabled:opacity-50"
+                                className="absolute right-2 top-2 h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-black shadow-lg shadow-primary/20 transition-all active:scale-95"
                             >
                                 {postComment.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-5 h-5" />}
                             </button>
                         </div>
                     </div>
-                </div>
 
-                {/* LIST KOMEN */}
-                <div className="space-y-10">
-                    {loadingComments ? (
-                        <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
-                    ) : (
-                        rootComments.map((comment: any) => (
-                            <div key={comment.id} className="group animate-in fade-in slide-in-from-bottom-2 duration-500 border-b border-white/5 pb-8 last:border-0">
-                                <div className="flex gap-4">
-                                    <Avatar className="h-10 w-10 border border-white/10 bg-neutral-800 shadow-sm">
-                                        <AvatarFallback className="text-[10px] font-bold">{comment.name?.charAt(0) || 'K'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="flex-1">
-                                        <div className="flex items-center gap-2 mb-2">
-                                            <span className="font-bold text-sm text-white tracking-tight">{comment.name}</span>
-                                            <span className="text-[10px] text-gray-600 ml-auto font-medium">
-                                                {new Date(comment.created_at).toLocaleDateString('id-ID')}
-                                            </span>
-                                        </div>
-                                        <p className="text-sm text-gray-300 leading-relaxed font-light">{comment.content}</p>
-                                        
-                                        <div className="flex gap-6 mt-4">
-                                            <button onClick={() => handleCommentLike(comment.id, comment.likes || 0)} className="flex items-center gap-1.5 text-[10px] text-gray-500 hover:text-primary transition-colors font-bold uppercase tracking-widest">
-                                                <ThumbsUp className="w-3 h-3" /> {comment.likes || 0}
-                                            </button>
-                                            <button onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)} className="text-[10px] text-gray-500 hover:text-primary transition-colors font-bold uppercase tracking-widest">
-                                                Balas
-                                            </button>
-                                        </div>
-
-                                        {replyTo === comment.id && (
-                                            <div className="mt-4 flex gap-2 animate-in fade-in zoom-in duration-200">
-                                                <Input 
-                                                    id={`reply-${comment.id}`}
-                                                    placeholder="Balas komentar..." 
-                                                    className="bg-neutral-900 border-white/10 rounded-full h-10 text-xs flex-1 pl-5"
-                                                    autoFocus
-                                                />
-                                                <Button size="icon" className="h-10 w-10 rounded-full bg-primary" onClick={() => {
-                                                    const el = document.getElementById(`reply-${comment.id}`) as HTMLInputElement;
-                                                    if(el?.value) postComment.mutate({ content: el.value, name: commentName, parentId: comment.id });
-                                                }}><Send className="w-4 h-4" /></Button>
+                    <div className="space-y-10">
+                        {loadingComments ? (
+                            <div className="py-10 text-center"><Loader2 className="w-8 h-8 animate-spin mx-auto text-primary" /></div>
+                        ) : rootComments.length === 0 ? (
+                            <div className="py-10 text-center">
+                                <p className="text-muted-foreground font-medium text-sm italic">Belum ada diskusi di episode ini.</p>
+                            </div>
+                        ) : (
+                            rootComments.map((comment: any) => (
+                                <div key={comment.id} className="pb-8 border-b border-gray-50 last:border-0">
+                                    <div className="flex gap-5">
+                                        <Avatar className="h-12 w-12 rounded-2xl bg-primary/10 border border-primary/20 shrink-0">
+                                            <AvatarFallback className="text-primary font-bold">{comment.name?.charAt(0) || 'U'}</AvatarFallback>
+                                        </Avatar>
+                                        <div className="flex-1">
+                                            <div className="flex items-center justify-between mb-2">
+                                                <span className="font-bold text-sm text-foreground">{comment.name}</span>
+                                                <span className="text-[10px] text-muted-foreground font-medium">{new Date(comment.created_at).toLocaleDateString()}</span>
                                             </div>
-                                        )}
-
-                                        {getReplies(comment.id).map((reply: any) => (
-                                            <div key={reply.id} className="mt-6 pl-4 border-l-2 border-primary/20 flex gap-3 animate-in slide-in-from-left-2">
-                                                <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                        <span className="font-bold text-xs text-gray-400">{reply.name}</span>
-                                                    </div>
-                                                    <p className="text-xs text-gray-500 leading-relaxed font-light">{reply.content}</p>
-                                                </div>
+                                            <p className="text-[15px] text-foreground/80 font-medium leading-relaxed">{comment.content}</p>
+                                            <div className="flex gap-6 mt-4">
+                                                <button onClick={() => handleCommentLike(comment.id, comment.likes || 0)} className="flex items-center gap-1.5 text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors">
+                                                    <ThumbsUp className="w-3.5 h-3.5" /> {comment.likes || 0}
+                                                </button>
+                                                <button onClick={() => setReplyTo(replyTo === comment.id ? null : comment.id)} className="text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors">Balas</button>
                                             </div>
-                                        ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))
-                    )}
+                            ))
+                        )}
+                    </div>
                 </div>
             </TabsContent>
 
-            <TabsContent value="episodes">
-                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+            <TabsContent value="episodes" className="animate-fade-in">
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-10 gap-3">
                     {episodeData.episodes_list?.map((ep, i) => (
                         <Link key={i} href={`/episode/${ep.slug}`}>
-                            <Button variant={ep.slug === slug ? 'default' : 'outline'} className="w-full h-10 border-white/20 text-xs font-bold rounded-xl transition-all hover:scale-105 active:scale-95">
+                            <Button 
+                                variant="outline" 
+                                className={cn(
+                                    "w-full h-12 rounded-xl font-bold text-xs transition-all border-black/5 shadow-soft",
+                                    ep.slug === slug ? "bg-primary border-primary text-black" : "bg-white hover:border-primary hover:text-primary"
+                                )}
+                            >
                                 {episodeData.episodes_list!.length - i}
                             </Button>
                         </Link>

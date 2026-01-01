@@ -1,82 +1,81 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Home, Search, PlayCircle, Grid, Menu, X, Heart } from 'lucide-react';
+import { Search, Heart, Menu, Home, Compass, X } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 
 export const Navbar = () => {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
 
-  const navItems = [
-    { path: '/', icon: Home, label: 'Home' },
-    { path: '/ongoing', icon: PlayCircle, label: 'Ongoing' },
-    { path: '/search', icon: Search, label: 'Search' },
-    { path: '/favorites', icon: Heart, label: 'Saved' },
-    { path: '/genres', icon: Grid, label: 'Genres' },
-  ];
+  useEffect(() => {
+    const handleScroll = () => setScrolled(window.scrollY > 20);
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
-    <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-end gap-3">
-      
-      {/* Expandable Nav Items */}
-      <nav 
-        className={cn(
-          "bg-black/80 backdrop-blur-2xl rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] flex items-center gap-1 px-2 py-2 overflow-hidden transition-all duration-500 ease-[cubic-bezier(0.4,0,0.2,1)]",
-          // BORDER TEGAS
-          "border border-white/20 ring-1 ring-white/5",
-          isOpen ? "w-[320px] md:w-[400px] opacity-100 translate-y-0" : "w-0 px-0 opacity-0 translate-y-10"
-        )}
-      >
-        <div className="flex w-full justify-between items-center min-w-max">
-          {navItems.map((item) => {
-            const isActive = pathname === item.path || (item.path !== '/' && pathname.startsWith(item.path) && item.path !== '/search');
-            
-            return (
-              <Link key={item.path} href={item.path} onClick={() => setIsOpen(false)}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "rounded-full h-10 w-10 md:h-12 md:w-12 transition-all duration-300",
-                    isActive 
-                      ? "bg-white text-black hover:bg-white/90 shadow-[0_0_15px_rgba(255,255,255,0.3)] scale-105" 
-                      : "text-gray-400 hover:text-white hover:bg-white/10"
-                  )}
-                >
-                  <item.icon className={cn("h-4 w-4 md:h-5 md:w-5", isActive && "fill-current")} />
-                  <span className="sr-only">{item.label}</span>
+    <div className="fixed bottom-8 left-0 right-0 z-50 flex justify-center pointer-events-none">
+      <nav className={cn(
+        "flex items-center gap-2 p-2 rounded-full border border-black/5 bg-white/80 backdrop-blur-2xl shadow-2xl pointer-events-auto transition-all duration-500",
+        scrolled ? "translate-y-0 opacity-100" : "translate-y-0"
+      )}>
+        
+        {/* PILL NAVIGATION */}
+        <Link href="/">
+            <Button variant="ghost" size="icon" className={cn(
+                "w-12 h-12 rounded-full transition-all",
+                pathname === '/' ? "bg-primary text-black shadow-lg shadow-primary/20" : "text-muted-foreground"
+            )}>
+                <Home className="w-5 h-5" />
+            </Button>
+        </Link>
+
+        <Link href="/search">
+            <Button variant="ghost" size="icon" className={cn(
+                "w-12 h-12 rounded-full transition-all",
+                pathname === '/search' ? "bg-primary text-black shadow-lg shadow-primary/20" : "text-muted-foreground"
+            )}>
+                <Search className="w-5 h-5" />
+            </Button>
+        </Link>
+
+        {/* HAMBURGER TRIGGER */}
+        <Sheet>
+            <SheetTrigger asChild>
+                <Button variant="ghost" size="icon" className="w-12 h-12 rounded-full text-muted-foreground">
+                    <Menu className="w-5 h-5" />
                 </Button>
-              </Link>
-            );
-          })}
-        </div>
+            </SheetTrigger>
+            <SheetContent side="bottom" className="rounded-t-[2.5rem] border-t-0 h-[60vh] p-8">
+                <SheetHeader className="mb-8">
+                    <SheetTitle className="text-left text-2xl font-black">PingHua</SheetTitle>
+                </SheetHeader>
+                <div className="grid grid-cols-2 gap-4">
+                    <Link href="/ongoing" className="col-span-2">
+                        <Button variant="secondary" className="w-full h-16 rounded-2xl justify-start px-6 text-lg font-bold gap-4">
+                            <Compass className="w-6 h-6 text-primary" /> Ongoing Series
+                        </Button>
+                    </Link>
+                    <Link href="/favorites">
+                        <Button variant="secondary" className="w-full h-16 rounded-2xl justify-start px-6 text-lg font-bold gap-4">
+                            <Heart className="w-6 h-6 text-red-500" /> Favorites
+                        </Button>
+                    </Link>
+                    <Link href="/genres">
+                        <Button variant="secondary" className="w-full h-16 rounded-2xl justify-start px-6 text-lg font-bold gap-4">
+                            <Menu className="w-6 h-6 text-blue-500" /> Genres
+                        </Button>
+                    </Link>
+                </div>
+            </SheetContent>
+        </Sheet>
+
       </nav>
-
-      {/* Main Toggle Button */}
-      <Button
-        size="icon"
-        className={cn(
-            "h-14 w-14 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.5)] transition-all duration-300 hover:scale-110 active:scale-90",
-            // BORDER TEGAS
-            "border-2",
-            isOpen 
-              ? "bg-white text-black border-white hover:bg-white/90 shadow-[0_0_20px_rgba(255,255,255,0.3)]" 
-              : "bg-black/80 backdrop-blur-2xl text-white border-white/20 hover:border-white/50 hover:bg-black"
-        )}
-        onClick={() => setIsOpen(!isOpen)}
-      >
-        {isOpen ? (
-            <X className="h-6 w-6" />
-        ) : (
-            <Menu className="h-6 w-6" />
-        )}
-        <span className="sr-only">Toggle Menu</span>
-      </Button>
-
     </div>
   );
 };

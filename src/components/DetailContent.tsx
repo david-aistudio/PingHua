@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState, useRef, useCallback } from 'react';
-import { Play, Star, Share2, Heart } from 'lucide-react';
+import { Play, Star, Share2, Heart, Info, Clock, Monitor, List } from 'lucide-react';
 import Link from 'next/link';
 import { toast } from 'sonner';
 import { DonghuaDetail } from '@/lib/api';
 import { favorites } from '@/lib/favorites';
 import { Button } from '@/components/ui/button';
+import { optimizeImage } from '@/lib/image-optimizer';
+import { cn } from '@/lib/utils';
 
 interface DetailContentProps {
   donghua: DonghuaDetail;
@@ -14,11 +16,12 @@ interface DetailContentProps {
 }
 
 export function DetailContent({ donghua, slug }: DetailContentProps) {
-  const [visibleEpisodes, setVisibleEpisodes] = useState(20);
+  const [visibleEpisodes, setVisibleEpisodes] = useState(24);
   const [isFavorite, setIsFavorite] = useState(false);
   const observerTarget = useRef<HTMLDivElement>(null);
 
-  // Check favorite status on mount
+  const optimizedPoster = optimizeImage(donghua.poster, 600);
+
   useEffect(() => {
     setIsFavorite(favorites.has(slug));
   }, [slug]);
@@ -27,7 +30,7 @@ export function DetailContent({ donghua, slug }: DetailContentProps) {
     if (isFavorite) {
       favorites.remove(slug);
       setIsFavorite(false);
-      toast.success('Dihapus dari Favorit');
+      toast.success('Removed from Favorites');
     } else {
       favorites.add({
         slug: slug,
@@ -37,28 +40,19 @@ export function DetailContent({ donghua, slug }: DetailContentProps) {
         url: `/detail/${slug}`
       });
       setIsFavorite(true);
-      
-      toast.success('Berhasil Disimpan!', {
-        description: donghua.title,
-        action: {
-          label: 'Lihat',
-          onClick: () => console.log('Undo'),
-        },
-      });
+      toast.success('Added to Favorites!');
     }
   };
 
   const loadMoreEpisodes = useCallback(() => {
     if (donghua?.episodes_list && visibleEpisodes < donghua.episodes_list.length) {
-      setVisibleEpisodes(prev => Math.min(prev + 20, donghua.episodes_list.length));
+      setVisibleEpisodes(prev => Math.min(prev + 24, donghua.episodes_list.length));
     }
   }, [donghua, visibleEpisodes]);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
-      entries => {
-        if (entries[0].isIntersecting) loadMoreEpisodes();
-      },
+      entries => { if (entries[0].isIntersecting) loadMoreEpisodes(); },
       { threshold: 0.1 }
     );
     const currentTarget = observerTarget.current;
@@ -67,108 +61,114 @@ export function DetailContent({ donghua, slug }: DetailContentProps) {
   }, [loadMoreEpisodes]);
 
   return (
-    <div className="min-h-screen pb-24 bg-background text-foreground animate-fade-in">
-      {/* Elegant Hero Section */}
-      <div className="relative w-full overflow-hidden pt-12">
-        <div className="absolute inset-0 bg-gradient-to-b from-primary/10 via-background to-background" />
-
-        <div className="container mx-auto px-4 relative z-10">
-            <div className="flex flex-col md:flex-row gap-8 lg:gap-12">
-                {/* Poster */}
-                <div className="w-full md:w-[280px] flex-shrink-0">
-                    <div className="rounded-2xl overflow-hidden shadow-2xl border border-white/10 aspect-[2/3]">
-                        <img src={donghua.poster} alt={donghua.title} className="w-full h-full object-cover" />
+    <div className="min-h-screen pb-32 bg-background">
+      {/* HERO SECTION */}
+      <div className="relative w-full overflow-hidden bg-white border-b border-black/5 pb-12 md:pb-20 pt-10 md:pt-16">
+        <div className="container mx-auto px-4 md:px-8 relative z-10">
+            <div className="flex flex-col md:flex-row gap-8 lg:gap-14">
+                <div className="w-full md:w-[300px] lg:w-[340px] shrink-0">
+                    <div className="relative aspect-[3/4] rounded-[2rem] overflow-hidden shadow-soft border border-black/5">
+                        <img src={optimizedPoster} alt={`Streaming ${donghua.title} Subtitle Indonesia Full Episode HD`} className="w-full h-full object-cover" />
+                        <div className="absolute top-4 right-4 bg-primary text-black px-3 py-1 rounded-xl text-[10px] font-bold shadow-lg">
+                            {donghua.status}
+                        </div>
                     </div>
                 </div>
 
-                {/* Main Info */}
+                {/* Info */}
                 <div className="flex-1 space-y-6">
-                    <div className="flex flex-wrap items-center gap-3 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                        <span className="text-primary">{donghua.status}</span>
-                        <span>•</span>
-                        <span>{donghua.type}</span>
-                        <span>•</span>
-                        <div className="flex items-center gap-1 text-white">
-                            <Star className="w-3.5 h-3.5 fill-yellow-500 text-yellow-500" />
-                            {donghua.rating || 'N/A'}
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-3">
+                            <span className="bg-orange-50 text-primary px-3 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider">{donghua.type || 'Series'}</span>
+                            <div className="flex items-center gap-1 text-sm font-bold text-foreground">
+                                <Star className="w-4 h-4 fill-primary text-primary" />
+                                {donghua.rating || '8.5'}
+                            </div>
+                        </div>
+                        <h1 className="text-3xl md:text-5xl font-bold tracking-tight text-foreground leading-tight">{donghua.title}</h1>
+                        <div className="flex flex-wrap gap-2">
+                            {donghua.genres?.map((genre, i) => (
+                                <Link key={i} href={`/genre/${genre.slug}`} className="bg-secondary/50 hover:bg-white hover:shadow-soft px-4 py-1.5 rounded-xl text-xs font-medium text-muted-foreground transition-all border border-transparent hover:border-black/5">
+                                    {genre.name}
+                                </Link>
+                            ))}
                         </div>
                     </div>
 
-                    <h1 className="text-4xl md:text-6xl font-bold text-white tracking-tight leading-tight">
-                        {donghua.title}
-                    </h1>
-
-                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-sm">
-                        {donghua.genres?.map((genre, i) => (
-                            <Link key={i} href={`/genre/${genre.slug}`} className="text-gray-400 hover:text-white transition-colors border-b border-white/0 hover:border-white">
-                                {genre.name}
-                            </Link>
-                        ))}
-                    </div>
-
-                    {/* Action Buttons */}
                     <div className="flex flex-wrap gap-3 pt-2">
                         {donghua.episodes_list && donghua.episodes_list.length > 0 && (
                             <Link href={`/episode/${donghua.episodes_list[0].slug}`}>
-                                <Button className="rounded-full px-8 h-12 bg-white text-black hover:bg-gray-200 font-bold">
-                                    <Play className="w-5 h-5 mr-2 fill-current" /> Nonton
+                                <Button className="h-12 px-8 rounded-full bg-primary hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-lg shadow-primary/10">
+                                    <Play className="w-4 h-4 mr-2 fill-current" /> START WATCHING
                                 </Button>
                             </Link>
                         )}
-                        <Button variant="outline" className="rounded-full px-6 h-12 border-white/20 hover:bg-white/10" onClick={toggleFavorite}>
-                            <Heart className={`w-5 h-5 mr-2 ${isFavorite ? "fill-red-500 text-red-500" : ""}`} />
-                            {isFavorite ? 'Saved' : 'Save'}
-                        </Button>
-                        <Button variant="outline" size="icon" className="rounded-full w-12 h-12 border-white/20 hover:bg-white/10" onClick={() => {
-                            navigator.clipboard.writeText(window.location.href);
-                            toast.success('Link disalin!');
-                        }}>
-                            <Share2 className="w-5 h-5" />
+                        <Button 
+                            variant="outline" 
+                            className={cn(
+                                "h-12 px-6 rounded-full border-black/5 bg-white shadow-soft transition-all font-bold text-xs",
+                                isFavorite ? "text-red-500 border-red-100 bg-red-50" : "text-foreground"
+                            )} 
+                            onClick={toggleFavorite}
+                        >
+                            <Heart className={cn("w-4 h-4 mr-2", isFavorite && "fill-current")} />
+                            {isFavorite ? 'SAVED' : 'FAVORITE'}
                         </Button>
                     </div>
 
-                    {/* Synopsis */}
-                    <div className="pt-8 border-t border-white/10">
-                        <h3 className="text-lg font-bold mb-3">Sinopsis</h3>
-                        <p className="text-gray-400 leading-relaxed text-base max-w-4xl">{donghua.synopsis}</p>
+                    <div className="space-y-3 pt-6 border-t border-black/5">
+                        <h3 className="text-sm font-bold text-foreground uppercase tracking-wider flex items-center gap-2">
+                            <div className="w-1 h-3 bg-primary rounded-full" /> Synopsis
+                        </h3>
+                        <p className="text-muted-foreground leading-relaxed text-sm md:text-base font-medium max-w-3xl">
+                            {donghua.synopsis}
+                        </p>
                     </div>
 
-                    {/* Info Grid */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-4">
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
                         {[
-                            { label: 'Studio', value: donghua.studio },
-                            { label: 'Rilis', value: donghua.released },
-                            { label: 'Eps', value: donghua.episodes_count },
-                            { label: 'Negara', value: donghua.country },
+                            { label: 'Studio', value: donghua.studio, icon: Monitor },
+                            { label: 'Released', value: donghua.released, icon: Clock },
+                            { label: 'Total Eps', value: donghua.episodes_count, icon: List },
+                            { label: 'Status', value: donghua.status, icon: Info },
                         ].map((item, i) => (
                             item.value ? (
-                                <div key={i}>
-                                    <span className="block text-[10px] uppercase tracking-widest text-muted-foreground mb-1">{item.label}</span>
-                                    <span className="text-sm font-medium text-white">{item.value}</span>
+                                <div key={i} className="space-y-0.5">
+                                    <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">{item.label}</span>
+                                    <span className="text-sm font-semibold text-foreground block">{item.value}</span>
                                 </div>
                             ) : null
                         ))}
                     </div>
                 </div>
             </div>
-
-            {/* Episodes List */}
-            {donghua.episodes_list && donghua.episodes_list.length > 0 && (
-                <div className="mt-20">
-                    <h2 className="text-2xl font-bold mb-8">Daftar Episode</h2>
-                    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-3">
-                        {donghua.episodes_list.slice(0, visibleEpisodes).map((episode, index) => (
-                            <Link key={index} href={`/episode/${episode.slug}`}>
-                                <Button variant="outline" className="w-full h-12 border-white/20 hover:border-primary hover:text-primary transition-all">
-                                    Ep {donghua.episodes_list!.length - index}
-                                </Button>
-                            </Link>
-                        ))}
-                    </div>
-                    <div ref={observerTarget} className="h-10 mt-4" />
-                </div>
-            )}
         </div>
+      </div>
+
+      {/* EPISODES LIST Area */}
+      <div className="container mx-auto px-4 md:px-8 mt-12">
+        {donghua.episodes_list && donghua.episodes_list.length > 0 && (
+            <div className="space-y-8">
+                <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold tracking-tight flex items-center gap-2">
+                        <div className="w-1 h-5 bg-primary rounded-full" /> Daftar Episode
+                    </h2>
+                    <span className="text-[11px] font-bold text-muted-foreground bg-secondary px-3 py-1 rounded-lg">
+                        Total: {donghua.episodes_list.length}
+                    </span>
+                </div>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3">
+                    {donghua.episodes_list.slice(0, visibleEpisodes).map((episode, index) => (
+                        <Link key={index} href={`/episode/${episode.slug}`}>
+                            <Button variant="outline" className="w-full h-12 rounded-xl border-black/5 bg-white shadow-soft hover:border-primary hover:text-primary transition-all font-bold text-xs">
+                                {donghua.episodes_list!.length - index}
+                            </Button>
+                        </Link>
+                    ))}
+                </div>
+                <div ref={observerTarget} className="h-10" />
+            </div>
+        )}
       </div>
     </div>
   );

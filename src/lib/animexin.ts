@@ -26,6 +26,52 @@ async function fetchSafe(url: string, retries = 3) {
 export const animexin = {
     getHomeData: async (page: number = 1) => {
         try {
+            // --- REVOLUSI: Pake WP-JSON API buat Homepage ---
+            const apiUrl = `${BASE_URL}/wp-json/wp/v2/posts?per_page=12&page=${page}`;
+            const res = await fetch(apiUrl, { headers: HEADERS });
+            
+            if (res.ok) {
+                const posts = await res.json();
+                const latest = posts.map((p: any) => {
+                    const title = p.title.rendered;
+                    const slug = p.link.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
+                    // Ekstrak poster dari yoast atau content
+                    let img = p.yoast_head_json?.og_image?.[0]?.url || "";
+                    return { title, slug, poster: img, url: `/detail/${slug}` };
+                });
+
+                // Popular & Recommendation tetep ambil dari HTML (karena API gak punya filter 'popular')
+                const { data: html } = await fetchSafe(BASE_URL) as any;
+                const $ = cheerio.load(html);
+                const result: { popular: any[], latest: any[], recommendation: any[] } = { popular: [], latest: latest, recommendation: [] };
+
+                const extract = (container: any) => {
+                    const items: any[] = [];
+                    $(container).find('article, .post-item, .listupd li').each((i: number, el: any) => {
+                        const title = $(el).find('.tt, h4, .title').text().trim();
+                        const link = $(el).find('a').attr('href');
+                        let img = $(el).find('img').attr('src');
+                        if (img?.includes('data:image')) img = $(el).find('img').attr('data-src') || img;
+                        if (title && link) {
+                            const slug = link.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
+                            items.push({ title, slug, poster: img, url: `/detail/${slug}` });
+                        }
+                    });
+                    return items;
+                };
+
+                $('.bixbox').each((i, box) => {
+                    const title = $(box).find('h2, h3').text().trim();
+                    if (title.includes('Popular Today')) result.popular = extract(box);
+                    else if (title.includes('Recommendation')) result.recommendation = extract(box);
+                });
+
+                return result;
+            }
+        } catch(e) {}
+        
+        // Fallback ke HTML jika API gagal
+        try {
             const url = page === 1 ? BASE_URL : `${BASE_URL}/page/${page}/`;
             const { data } = await fetchSafe(url) as any;
             const $ = cheerio.load(data);
@@ -91,35 +137,108 @@ export const animexin = {
 
             if (!htmlData) return null;
             const $ = cheerio.load(htmlData);
+            const animeTitle = $('.entry-title').text().trim();
 
-            const episodes_list: any[] = [];
+            const episodes_map = new Map<string, any>();
+
+            // --- REVOLUSI: Pake WP-JSON API buat List Episode ---
+            try {
+                // 1. Cari Category ID dari Judul Anime
+                const catSearchUrl = `${BASE_URL}/wp-json/wp/v2/categories?search=${encodeURIComponent(animeTitle)}`;
+                const catRes = await fetch(catSearchUrl, { headers: HEADERS });
+                if (catRes.ok) {
+                    const cats = await catRes.json();
+                    // Cari yang paling mirip judulnya
+                    const bestCat = cats.find((c: any) => animeTitle.toLowerCase().includes(c.name.toLowerCase()) || c.name.toLowerCase().includes(animeTitle.toLowerCase()));
+                    
+                    if (bestCat) {
+                        console.log(`[JackpotV4] 🎯 Using Category API for ${animeTitle} (ID: ${bestCat.id})`);
+                        // 2. Tarik Episode (Post) dari Kategori ini
+                        const postApiUrl = `${BASE_URL}/wp-json/wp/v2/posts?categories=${bestCat.id}&per_page=100`;
+                        const postRes = await fetch(postApiUrl, { headers: HEADERS });
+                        if (postRes.ok) {
+                            const posts = await postRes.json();
+                            posts.forEach((p: any) => {
+                                const title = p.title.rendered;
+                                const epSlug = p.link.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
+                                const numMatch = title.match(/Episode\s*(\d+)/i) || epSlug.match(/episode-(\d+)/i);
+                                if (numMatch) {
+                                    const epNum = parseInt(numMatch[1]);
+                                    episodes_map.set(epSlug, {
+                                        episode: `Episode ${epNum}`,
+                                        slug: epSlug,
+                                        url: `/episode/${epSlug}`,
+                                        raw_num: epNum
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            } catch(e) { console.log("[JackpotV4] Failed, using fallback..."); }
+
+            // 3. Cadangan: Ambil dari List Standar HTML (.eplister) jika API kurang lengkap
             $('.eplister li a').each((i, el) => {
                 const num = $(el).find('.epl-num').text().trim();
                 const link = $(el).attr('href');
                 if (link) {
                     const epSlug = link.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
-                    episodes_list.push({ episode: `Episode ${num}`, slug: epSlug, url: `/episode/${epSlug}` });
-                }
-            });
-
-            $('.last-eps li, .cur-eps a').each((i, el) => {
-                const link = $(el).attr('href') || $(el).find('a').attr('href');
-                const txt = $(el).text().trim();
-                if (link && link.includes('episode')) {
-                    const epSlug = link.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
-                    if (!episodes_list.find(e => e.slug === epSlug)) {
-                        const numMatch = txt.match(/Episode\s*(\d+)/i);
-                        const num = numMatch ? numMatch[1] : (episodes_list.length + 1).toString();
-                        episodes_list.unshift({ episode: `Episode ${num}`, slug: epSlug, url: `/episode/${epSlug}` });
+                    if (!episodes_map.has(epSlug)) {
+                        const epNum = parseInt(num) || parseInt(epSlug.match(/episode-(\d+)/)?.[1] || "0");
+                        episodes_map.set(epSlug, { 
+                            episode: `Episode ${epNum}`, 
+                            slug: epSlug, 
+                            url: `/episode/${epSlug}`,
+                            raw_num: epNum 
+                        });
                     }
                 }
             });
 
-            const uniqueList = Array.from(new Map(episodes_list.map(item => [item.slug, item])).values())
-                .sort((a, b) => (parseInt(b.episode.replace(/\D/g, '')) || 0) - (parseInt(a.episode.replace(/\D/g, '')) || 0));
+            // 4. Auto-Heal: Scan Global Link
+            $('#content a, .entry-content a, .sidebar a, .widget a').each((i, el) => {
+                const link = $(el).attr('href');
+                const txt = $(el).text().trim();
+                if (link && link.includes(cleanSlug) && link.includes('episode')) {
+                    const epSlug = link.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
+                    if (!episodes_map.has(epSlug)) {
+                        const numMatch = txt.match(/Episode\s*(\d+)/i) || link.match(/episode-(\d+)/i);
+                        if (numMatch) {
+                            const epNum = parseInt(numMatch[1]);
+                            episodes_map.set(epSlug, {
+                                episode: `Episode ${epNum}`,
+                                slug: epSlug,
+                                url: `/episode/${epSlug}`,
+                                raw_num: epNum
+                            });
+                        }
+                    }
+                }
+            });
+
+            let uniqueList = Array.from(episodes_map.values())
+                .sort((a, b) => b.raw_num - a.raw_num)
+                .map(({ raw_num, ...rest }) => rest);
+
+            // 5. Gap Filler
+            if (uniqueList.length > 0) {
+                const maxEp = parseInt(uniqueList[0].episode.replace(/\D/g, '')) || 0;
+                const latestSlug = uniqueList[0].slug; 
+                let generatedCount = 0;
+                for (let i = maxEp - 1; i >= 1; i--) {
+                    if (generatedCount > 50) break; 
+                    const exists = uniqueList.some(e => (parseInt(e.episode.replace(/\D/g, '')) || 0) === i);
+                    if (!exists && latestSlug.includes(maxEp.toString())) {
+                        const newSlug = latestSlug.replace(maxEp.toString(), i.toString());
+                        uniqueList.push({ episode: `Episode ${i}`, slug: newSlug, url: `/episode/${newSlug}` });
+                        generatedCount++;
+                    }
+                }
+                uniqueList.sort((a, b) => (parseInt(b.episode.replace(/\D/g, '')) || 0) - (parseInt(a.episode.replace(/\D/g, '')) || 0));
+            }
 
             return {
-                title: $('.entry-title').text().trim(),
+                title: animeTitle,
                 poster: $('.thumb img').attr('src'),
                 synopsis: $('.entry-content p').text().trim(),
                 status: $('.spe span:contains("Status:")').text().replace('Status:', '').trim() || 'Ongoing',
@@ -131,8 +250,45 @@ export const animexin = {
 
     getEpisode: async (slug: string) => {
         try {
-            const url = `${BASE_URL}/${slug.replace(/^\/|\/$/g, '')}/`;
-            const { data } = await fetchSafe(url) as any;
+            let url = `${BASE_URL}/${slug.replace(/^\/|\/$/g, '')}/`;
+            let data: string | undefined;
+
+            // 1. COBA FETCH NORMAL
+            try {
+                const res = await fetchSafe(url) as any;
+                data = res.data;
+            } catch (e) {
+                console.log(`[GetEpisode] ⚠️ Link tebakan salah/mati: ${slug}. Mencoba Emergency Search...`);
+            }
+
+            // 2. EMERGENCY SEARCH
+            if (!data || data.includes('404 Not Found') || data.includes('Halaman tidak ditemukan')) {
+                const cleanSlug = slug.replace(/-indonesia-english-sub|-sub-indo|-subtitle-indonesia/g, '');
+                const parts = cleanSlug.split('-episode-');
+                
+                if (parts.length >= 2) {
+                    const titleRaw = parts[0].replace(/-/g, ' ');
+                    const epNum = parts[1].replace(/\D/g, ''); 
+                    
+                    const query = `${titleRaw} Episode ${epNum}`;
+                    console.log(`[GetEpisode] 🚑 Searching: "${query}"`);
+
+                    const searchRes = await animexin.search(query);
+                    if (searchRes.data && searchRes.data.length > 0) {
+                        const bestMatch = searchRes.data[0];
+                        if (bestMatch && bestMatch.url) {
+                            console.log(`[GetEpisode] ✅ Ketemu Link Asli: ${bestMatch.url}`);
+                            const realSlug = bestMatch.url.replace('/detail/', '').replace('/episode/', '');
+                            url = `${BASE_URL}/${realSlug}/`;
+                            const res2 = await fetchSafe(url) as any;
+                            data = res2.data;
+                        }
+                    }
+                }
+            }
+
+            if (!data) throw new Error("Episode not found after rescue.");
+
             const $ = cheerio.load(data);
 
             const title = $('.entry-title').text().trim();
@@ -158,7 +314,6 @@ export const animexin = {
                 });
             }
 
-            // --- BRUTAL PARENT DETECTOR ---
             let seriesLink = '';
             $('a').each((i, el) => {
                 const txt = $(el).text().trim();
@@ -177,12 +332,10 @@ export const animexin = {
             let fullList: any[] = [];
             if (seriesLink) {
                 const seriesSlug = seriesLink.replace(BASE_URL, '').replace(/^\/|\/$/g, '');
-                // Paksa fetch detail lewat logic internal
                 const detailData = await animexin.getDetail(seriesSlug);
                 if (detailData && detailData.episodes_list.length > 0) {
                     fullList = detailData.episodes_list;
-                    parentPoster = detailData.poster || ""; // FIX: Fallback string kosong
-                    // Auto-Heal Cache Detail
+                    parentPoster = detailData.poster || "";
                     supabaseAdmin.from('api_cache').upsert({
                         path: `detail/${seriesSlug.replace('anime/', '')}`,
                         data: detailData,
