@@ -6,6 +6,7 @@ import { Play, Bookmark } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { DonghuaCard as DonghuaType } from '@/lib/api'
 import { optimizeImage } from '@/lib/image-optimizer';
+import { cn } from '@/lib/utils';
 
 interface HeroCarouselProps {
   items: DonghuaType[]
@@ -24,7 +25,7 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
   if (!items || items.length === 0) return null
 
   return (
-    <div className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden bg-background">
+    <div className="relative w-full h-[70vh] md:h-[85vh] overflow-hidden bg-background" role="region" aria-roledescription="carousel" aria-label="Featured Donghua">
         {/* MASKING LAYER: This physically fades the entire container bottom */}
         <div className="absolute inset-0 z-[20] pointer-events-none" 
              style={{ 
@@ -43,11 +44,15 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                 className={`absolute inset-0 w-full h-full transition-all duration-[1500ms] ease-in-out ${
                     isActive ? 'opacity-100 scale-100 z-10' : 'opacity-0 scale-105 z-0'
                 }`}
+                aria-hidden={!isActive}
+                role="group"
+                aria-roledescription="slide"
+                aria-label={`${index + 1} of ${items.length}`}
             >
                 <div className="relative w-full h-full">
                 <img
                     src={optimizedPoster}
-                    alt={item.title}
+                    alt={`Featured: ${item.title}`}
                     className="w-full h-full object-cover"
                 />
                 
@@ -69,14 +74,14 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
                         </h2>
                         
                         <div className="flex flex-wrap items-center gap-4 pt-4">
-                            <Link href={`/detail/${item.slug}`}>
+                            <Link href={`/detail/${item.slug}`} aria-label={`Watch ${item.title} now`}>
                                 <Button className="h-14 px-10 rounded-full bg-primary hover:bg-amber-400 text-black font-black text-sm transition-all hover:scale-105 active:scale-95 shadow-2xl">
                                     <Play className="w-5 h-5 mr-2 fill-current" />
                                     WATCH NOW
                                 </Button>
                             </Link>
-                            <Link href={`/detail/${item.slug}`}>
-                                <Button variant="outline" className="h-14 px-8 rounded-full bg-white/10 backdrop-blur-xl border-white/20 text-white hover:bg-white hover:text-black font-bold text-sm transition-all hover:scale-105 active:scale-95">
+                            <Link href={`/detail/${item.slug}`} aria-label={`View details for ${item.title}`}>
+                                <Button variant="outline" className="h-14 px-10 rounded-full bg-white/10 backdrop-blur-xl border-white/20 text-white hover:bg-white hover:text-black font-bold text-sm transition-all hover:scale-105 active:scale-95">
                                     DETAILS
                                 </Button>
                             </Link>
@@ -89,15 +94,20 @@ export function HeroCarousel({ items }: HeroCarouselProps) {
         })}
         
         {/* INDICATORS */}
-        <div className="absolute bottom-12 right-8 md:right-20 flex flex-col gap-2 z-50">
+        <div className="absolute bottom-12 right-8 md:right-20 flex flex-col gap-3 z-50">
             {items.map((_, index) => (
                 <button
                 key={index}
-                className={`w-1 transition-all duration-500 rounded-full ${
-                    index === selectedIndex ? 'bg-primary h-12' : 'bg-white/30 h-4 hover:bg-white/60'
-                }`}
+                className="group p-2 -m-2 outline-none" // Extra padding for larger hit area
                 onClick={() => setSelectedIndex(index)}
-                />
+                aria-label={`Go to slide ${index + 1}`}
+                aria-current={index === selectedIndex}
+                >
+                    <div className={cn(
+                        "w-1.5 transition-all duration-500 rounded-full",
+                        index === selectedIndex ? "bg-primary h-12 shadow-[0_0_15px_rgba(255,184,0,0.5)]" : "bg-white/30 h-4 group-hover:bg-white/60"
+                    )} />
+                </button>
             ))}
         </div>
     </div>

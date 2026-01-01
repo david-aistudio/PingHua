@@ -78,8 +78,9 @@ export const ContinueWatching = () => {
               onClick={(e) => handleRemove(item.slug, e)}
               className="relative p-2 text-muted-foreground hover:text-destructive transition-colors rounded-full hover:bg-destructive/10"
               title="Hapus dari history"
+              aria-label={`Remove ${item.title} from history`}
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" aria-hidden="true" />
             </button>
           </Link>
         ))}

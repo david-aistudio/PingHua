@@ -169,26 +169,28 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
             </div>
 
             <div className="flex items-center gap-3">
-                <div className="flex bg-white rounded-full p-1 border border-black/5 shadow-soft">
+                <div className="flex bg-white rounded-full p-1 border border-black/5 shadow-soft" role="group" aria-label="Video voting">
                     <button 
                         onClick={() => handleVideoVote('likes')}
-                        className="flex items-center gap-2 px-5 py-2 hover:bg-orange-50 rounded-full transition-all text-xs font-bold"
+                        aria-label={`Like this video. Current likes: ${videoVotes?.likes || 0}`}
+                        className="flex items-center gap-2 px-5 py-2.5 hover:bg-orange-50 rounded-full transition-all text-xs font-bold"
                     >
-                        <ThumbsUp className="w-4 h-4 text-primary" /> {videoVotes?.likes || 0}
+                        <ThumbsUp className="w-4 h-4 text-primary" aria-hidden="true" /> {videoVotes?.likes || 0}
                     </button>
-                    <div className="w-px h-4 bg-gray-100 self-center"></div>
+                    <div className="w-px h-4 bg-gray-100 self-center" aria-hidden="true"></div>
                     <button 
                         onClick={() => handleVideoVote('dislikes')}
-                        className="flex items-center gap-2 px-5 py-2 hover:bg-red-50 rounded-full transition-all text-xs font-bold"
+                        aria-label={`Dislike this video. Current dislikes: ${videoVotes?.dislikes || 0}`}
+                        className="flex items-center gap-2 px-5 py-2.5 hover:bg-red-50 rounded-full transition-all text-xs font-bold"
                     >
-                        <ThumbsDown className="w-4 h-4 text-red-500" /> {videoVotes?.dislikes || 0}
+                        <ThumbsDown className="w-4 h-4 text-red-500" aria-hidden="true" /> {videoVotes?.dislikes || 0}
                     </button>
                 </div>
-                <Button variant="outline" size="icon" className="w-11 h-11 rounded-full border-black/5 bg-white shadow-soft" onClick={() => {
+                <Button variant="outline" size="icon" className="w-11 h-11 rounded-full border-black/5 bg-white shadow-soft" aria-label="Share this episode" onClick={() => {
                     navigator.clipboard.writeText(window.location.href);
                     toast.success("Link disalin!");
                 }}>
-                    <Share2 className="w-4 h-4" />
+                    <Share2 className="w-4 h-4" aria-hidden="true" />
                 </Button>
             </div>
         </div>
@@ -196,18 +198,21 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
         {/* Controls Bar */}
         <div className="flex flex-wrap gap-4 mb-12 items-center justify-between bg-white p-4 rounded-3xl border border-black/5 shadow-soft">
           <div className="flex flex-wrap gap-3 items-center">
-            <Select value={selectedServer} onValueChange={setSelectedServer}>
-              <SelectTrigger className="w-[180px] h-11 rounded-full border-none bg-secondary font-bold text-xs tracking-tight">
-                <SelectValue placeholder="Pilih Server" />
-              </SelectTrigger>
-              <SelectContent className="rounded-2xl border-black/5 shadow-2xl">
-                {episodeData.streaming.servers.map((s, i) => (
-                    <SelectItem key={i} value={s.url} className="text-xs font-semibold">
-                        Server: {s.name || `Unit ${i+1}`}
-                    </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="relative">
+                <span id="server-select-label" className="sr-only">Select streaming server</span>
+                <Select value={selectedServer} onValueChange={setSelectedServer}>
+                <SelectTrigger className="w-[180px] h-11 rounded-full border-none bg-secondary font-bold text-xs tracking-tight" aria-labelledby="server-select-label">
+                    <SelectValue placeholder="Pilih Server" />
+                </SelectTrigger>
+                <SelectContent className="rounded-2xl border-black/5 shadow-2xl">
+                    {episodeData.streaming.servers.map((s, i) => (
+                        <SelectItem key={i} value={s.url} className="text-xs font-semibold">
+                            Server: {s.name || `Unit ${i+1}`}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+                </Select>
+            </div>
 
             <div className="flex gap-2">
                 <Button 
@@ -215,21 +220,23 @@ export default function EpisodePlayer({ episode, slug }: { episode: EpisodeDetai
                     className="h-11 rounded-full border-primary/20 text-primary hover:bg-primary hover:text-white px-6 font-bold text-xs" 
                     onClick={() => prevEpisode && router.push(`/episode/${prevEpisode.slug}`)} 
                     disabled={!prevEpisode}
+                    aria-label="Go to previous episode"
                 >
-                    <ChevronLeft className="w-4 h-4 mr-1" /> Prev
+                    <ChevronLeft className="w-4 h-4 mr-1" aria-hidden="true" /> Prev
                 </Button>
                 <Button 
                     variant="outline" 
                     className="h-11 rounded-full border-primary/20 text-primary hover:bg-primary hover:text-white px-6 font-bold text-xs" 
                     onClick={() => nextEpisode && router.push(`/episode/${nextEpisode.slug}`)} 
                     disabled={!nextEpisode}
+                    aria-label="Go to next episode"
                 >
-                    Next <ChevronRight className="w-4 h-4 ml-1" />
+                    Next <ChevronRight className="w-4 h-4 ml-1" aria-hidden="true" />
                 </Button>
             </div>
           </div>
 
-          <Link href={`/detail/${donghuaSlug}`}>
+          <Link href={`/detail/${donghuaSlug}`} aria-label="View series details">
             <Button className="h-11 rounded-full bg-black text-white hover:bg-primary hover:text-black px-8 font-bold text-xs">Detail Series</Button>
           </Link>
         </div>

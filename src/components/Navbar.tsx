@@ -23,23 +23,23 @@ export const Navbar = () => {
       <nav className={cn(
         "flex items-center gap-2 p-2 rounded-full border border-black/5 bg-white/80 backdrop-blur-2xl shadow-2xl pointer-events-auto transition-all duration-500",
         scrolled ? "translate-y-0 opacity-100" : "translate-y-0"
-      )}>
+      )} aria-label="Main Navigation">
         
         {/* PILL NAVIGATION */}
-        <Link href="/">
+        <Link href="/" aria-label="Go to Homepage">
             <Button variant="ghost" size="icon" className={cn(
                 "w-12 h-12 rounded-full transition-all",
                 pathname === '/' ? "bg-primary text-black shadow-lg shadow-primary/20" : "text-muted-foreground"
-            )}>
+            )} aria-label="Home">
                 <Home className="w-5 h-5" />
             </Button>
         </Link>
 
-        <Link href="/search">
+        <Link href="/search" aria-label="Search Donghua">
             <Button variant="ghost" size="icon" className={cn(
                 "w-12 h-12 rounded-full transition-all",
                 pathname === '/search' ? "bg-primary text-black shadow-lg shadow-primary/20" : "text-muted-foreground"
-            )}>
+            )} aria-label="Search">
                 <Search className="w-5 h-5" />
             </Button>
         </Link>
@@ -47,13 +47,13 @@ export const Navbar = () => {
         {/* HAMBURGER TRIGGER */}
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="w-12 h-12 rounded-full text-muted-foreground">
+                <Button variant="ghost" size="icon" className="w-12 h-12 rounded-full text-muted-foreground" aria-label="Open Menu">
                     <Menu className="w-5 h-5" />
                 </Button>
             </SheetTrigger>
             <SheetContent side="bottom" className="rounded-t-[2.5rem] border-t-0 h-[60vh] p-8">
                 <SheetHeader className="mb-8">
-                    <SheetTitle className="text-left text-2xl font-black">PingHua</SheetTitle>
+                    <SheetTitle className="text-left text-2xl font-black">PingHua Menu</SheetTitle>
                 </SheetHeader>
                 <div className="grid grid-cols-2 gap-4">
                     <Link href="/ongoing" className="col-span-2">

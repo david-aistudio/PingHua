@@ -16,7 +16,7 @@ export const DonghuaCard = ({ donghua, isHistory = false }: DonghuaCardProps) =>
   const optimizedPoster = optimizeImage(donghua.poster, 400);
 
   return (
-    <Link href={targetUrl} className="group block">
+    <Link href={targetUrl} className="group block" aria-label={`Detail info for ${donghua.title}`}>
       <div className="flex flex-col gap-3">
         
         {/* POSTER: Super Rounded with Soft Shadow */}

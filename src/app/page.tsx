@@ -77,90 +77,89 @@ export default async function Home() {
                           </Button>
                       </Link>
                   ))}
-                  <Link href="/genres">
-                      <Button variant="ghost" className="rounded-xl text-muted-foreground hover:text-foreground transition-colors px-6 h-9 font-bold text-[10px] uppercase tracking-wider">
-                          Discovery
-                      </Button>
-                  </Link>
-              </div>
-          </section>
-
-        {/* POPULAR TODAY - Spotlight Edition */}
-        {allPopular.length > 0 && (
-            <section className="animate-fade-in">
-                <div className="flex flex-col gap-2 mb-6">
-                    <div className="flex items-center gap-2">
-                        <div className="w-1 h-5 bg-primary rounded-full shadow-sm" />
-                        <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Popular Today</h2>
-                    </div>
-                </div>
-
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-                    {/* SPOTLIGHT ITEM (RANK 1) */}
-                    <div className="lg:col-span-5 group relative">
-                        <Link href={`/detail/${allPopular[0].slug}`} className="block relative aspect-[16/10] overflow-hidden rounded-[1.5rem] shadow-soft border border-black/5">
-                            <img 
-                                src={optimizeImage(allPopular[0].poster, 800)} 
-                                alt={allPopular[0].title} 
-                                className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
-                            <div className="absolute bottom-0 left-0 p-6 space-y-2">
-                                <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">{allPopular[0].title}</h3>
-                                <div className="flex items-center gap-3">
-                                    <Button className="h-9 px-5 rounded-full bg-primary text-black font-bold text-[10px] uppercase tracking-tight">Watch Now</Button>
-                                    <span className="text-white/60 text-[10px] font-bold uppercase tracking-tight">{allPopular[0].status}</span>
-                                </div>
-                            </div>
-                        </Link>
-                    </div>
-
-                    {/* SCROLLING CAST (RANK 2+) */}
-                    <div className="lg:col-span-7">
-                        <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x">
-                            {allPopular.slice(1, 10).map((donghua: any, index: number) => (
-                                <div key={index} className="flex-shrink-0 w-[150px] md:w-[190px] snap-start relative group">
-                                    <div className="absolute -top-3 left-0 text-2xl font-black text-black/[0.03] z-0">
-                                        {(index + 2).toString().padStart(2, '0')}
-                                    </div>
-                                    <div className="relative z-10">
-                                        <DonghuaCard donghua={donghua} />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </section>
-        )}
-
-        {/* LATEST RELEASE - GRID BERSIH */}
-        <section className="animate-fade-in">
-            <div className="flex items-center justify-between mb-6 pb-2 border-b border-black/5">
-                <div className="flex items-center gap-2">
-                    <div className="w-1 h-5 bg-primary rounded-full shadow-sm" />
-                    <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Latest Release</h2>
-                </div>
-                <Link href="/ongoing">
-                  <Button variant="outline" className="h-9 px-5 rounded-full border-black/5 bg-white shadow-soft hover:border-primary text-[10px] font-bold transition-all uppercase tracking-tight">
-                      View All
-                  </Button>
-                </Link>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
-                {latestSection.map((donghua: any, index: number) => (
-                  <DonghuaCard key={index} donghua={donghua} />
-                ))}
-            </div>
-        </section>
-
-        {/* RECOMMENDATION */}
-        <section className="animate-fade-in pb-16">
-            <div className="flex items-center gap-2 mb-6">
-                <div className="w-1 h-5 bg-primary rounded-full shadow-sm" />
-                <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Recommended</h2>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
+                                  <Link href="/genres" aria-label="Browse all genres">
+                                      <Button variant="ghost" className="rounded-xl text-muted-foreground hover:text-foreground transition-colors px-6 h-9 font-bold text-[10px] uppercase tracking-wider">
+                                          Discovery
+                                      </Button>
+                                  </Link>
+                              </div>
+                          </section>
+                  
+                          {/* POPULAR TODAY - Spotlight Edition */}
+                          {allPopular.length > 0 && (
+                              <section className="animate-fade-in" aria-labelledby="popular-heading">
+                                  <div className="flex flex-col gap-2 mb-6">
+                                      <div className="flex items-center gap-2">
+                                          <div className="w-1 h-5 bg-primary rounded-full shadow-sm" />
+                                          <h2 id="popular-heading" className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Popular Today</h2>
+                                      </div>
+                                  </div>
+                  
+                                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                                      {/* SPOTLIGHT ITEM (RANK 1) */}
+                                      <div className="lg:col-span-5 group relative">
+                                          <Link href={`/detail/${allPopular[0].slug}`} className="block relative aspect-[16/10] overflow-hidden rounded-[1.5rem] shadow-soft border border-black/5" aria-label={`View details for rank 1: ${allPopular[0].title}`}>
+                                              <img 
+                                                  src={optimizeImage(allPopular[0].poster, 800)} 
+                                                  alt={`Rank 1 Popular: ${allPopular[0].title}`} 
+                                                  className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+                                              />
+                                              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent" />
+                                              <div className="absolute bottom-0 left-0 p-6 space-y-2">
+                                                  <h3 className="text-xl md:text-2xl font-bold text-white leading-tight">{allPopular[0].title}</h3>
+                                                  <div className="flex items-center gap-3">
+                                                      <Button className="h-9 px-5 rounded-full bg-primary text-black font-bold text-[10px] uppercase tracking-tight" aria-hidden="true">Watch Now</Button>
+                                                      <span className="text-white/60 text-[10px] font-bold uppercase tracking-tight">{allPopular[0].status}</span>
+                                                  </div>
+                                              </div>
+                                          </Link>
+                                      </div>
+                  
+                                      {/* SCROLLING CAST (RANK 2+) */}
+                                      <div className="lg:col-span-7">
+                                          <div className="flex gap-4 overflow-x-auto pb-6 scrollbar-hide snap-x" role="list" aria-label="Top popular donghua scroll">
+                                              {allPopular.slice(1, 10).map((donghua: any, index: number) => (
+                                                  <div key={index} className="flex-shrink-0 w-[150px] md:w-[190px] snap-start relative group" role="listitem">
+                                                      <div className="absolute -top-3 left-0 text-2xl font-black text-black/[0.03] z-0" aria-hidden="true">
+                                                          {(index + 2).toString().padStart(2, '0')}
+                                                      </div>
+                                                      <div className="relative z-10">
+                                                          <DonghuaCard donghua={donghua} />
+                                                      </div>
+                                                  </div>
+                                              ))}
+                                          </div>
+                                      </div>
+                                  </div>
+                              </section>
+                          )}
+                  
+                          {/* LATEST RELEASE - GRID BERSIH */}
+                          <section className="animate-fade-in" aria-labelledby="latest-heading">
+                              <div className="flex items-center justify-between mb-6 pb-2 border-b border-black/5">
+                                  <div className="flex items-center gap-2">
+                                      <div className="w-1 h-5 bg-primary rounded-full shadow-sm" />
+                                      <h2 id="latest-heading" className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Latest Release</h2>
+                                  </div>
+                                  <Link href="/ongoing" aria-label="View all ongoing donghua">
+                                    <Button variant="outline" className="h-9 px-5 rounded-full border-black/5 bg-white shadow-soft hover:border-primary text-[10px] font-bold transition-all uppercase tracking-tight">
+                                        View All
+                                    </Button>
+                                  </Link>
+                              </div>
+                              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
+                                  {latestSection.map((donghua: any, index: number) => (
+                                    <DonghuaCard key={index} donghua={donghua} />
+                                  ))}
+                              </div>
+                          </section>
+                  
+                          {/* RECOMMENDATION */}
+                          <section className="animate-fade-in pb-16" aria-labelledby="recommend-heading">
+                              <div className="flex items-center gap-2 mb-6">
+                                  <div className="w-1 h-5 bg-primary rounded-full shadow-sm" />
+                                  <h2 id="recommend-heading" className="text-xl md:text-2xl font-bold tracking-tight text-foreground">Recommended</h2>
+                              </div>            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8 md:gap-x-6 md:gap-y-10">
                 {recommendation.map((donghua: any, index: number) => (
                   <DonghuaCard key={index} donghua={donghua} />
                 ))}

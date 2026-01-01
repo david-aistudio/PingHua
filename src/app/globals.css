@@ -18,7 +18,7 @@
   --color-secondary-foreground: #1D1D1F;
   
   --color-muted: #F2F2F7;
-  --color-muted-foreground: #86868B;
+  --color-muted-foreground: #636366; /* Darker Apple Gray for accessibility */
   
   --color-accent: #FFF9E5; 
   --color-accent-foreground: #FFB800;

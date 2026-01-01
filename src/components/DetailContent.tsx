@@ -97,9 +97,9 @@ export function DetailContent({ donghua, slug }: DetailContentProps) {
 
                     <div className="flex flex-wrap gap-3 pt-2">
                         {donghua.episodes_list && donghua.episodes_list.length > 0 && (
-                            <Link href={`/episode/${donghua.episodes_list[0].slug}`}>
+                            <Link href={`/episode/${donghua.episodes_list[0].slug}`} aria-label={`Start watching ${donghua.title}`}>
                                 <Button className="h-12 px-8 rounded-full bg-primary hover:bg-amber-400 text-black font-bold text-sm transition-all shadow-lg shadow-primary/10">
-                                    <Play className="w-4 h-4 mr-2 fill-current" /> START WATCHING
+                                    <Play className="w-4 h-4 mr-2 fill-current" aria-hidden="true" /> START WATCHING
                                 </Button>
                             </Link>
                         )}
@@ -110,8 +110,9 @@ export function DetailContent({ donghua, slug }: DetailContentProps) {
                                 isFavorite ? "text-red-500 border-red-100 bg-red-50" : "text-foreground"
                             )} 
                             onClick={toggleFavorite}
+                            aria-label={isFavorite ? `Remove ${donghua.title} from favorites` : `Add ${donghua.title} to favorites`}
                         >
-                            <Heart className={cn("w-4 h-4 mr-2", isFavorite && "fill-current")} />
+                            <Heart className={cn("w-4 h-4 mr-2", isFavorite && "fill-current")} aria-hidden="true" />
                             {isFavorite ? 'SAVED' : 'FAVORITE'}
                         </Button>
                     </div>
