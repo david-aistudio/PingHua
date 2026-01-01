@@ -82,14 +82,15 @@ export const api = {
   }),
 
   getOngoing: async (page: number = 1) => getOrUpdateCache<any>(`ongoing/${page}`, async () => {
-      // Animexin Ongoing = Home Latest with Pagination
+      // Pake getHomeData yang udah support paginasi API
       const data = await animexin.getHomeData(page);
       return { ongoing_donghua: data?.latest || [] };
   }),
 
   getCompleted: async (page: number = 1) => getOrUpdateCache<any>(`completed/${page}`, async () => {
-      const res = await animexin.search('Completed');
-      return { completed_donghua: res.data };
+      // Cari dengan keyword 'Completed' buat Archive
+      const res = await animexin.search('Completed', page);
+      return { completed_donghua: res.data || [] };
   }),
 
   getDetail: async (slug: string) => getOrUpdateCache<DonghuaDetail>(`detail/${slug}`, () => animexin.getDetail(slug) as any),
