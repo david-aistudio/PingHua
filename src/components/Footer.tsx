@@ -8,7 +8,7 @@ export const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
           {/* Brand & Contact */}
           <div className="space-y-4">
-            <h3 className="text-2xl font-black tracking-tighter uppercase italic">
+            <h3 className="text-2xl font-bold tracking-tight text-foreground">
                 PingHua
             </h3>
             <p className="text-sm text-muted-foreground leading-relaxed font-medium">
@@ -29,7 +29,7 @@ export const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Sitemap Index</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Sitemap Index</h4>
             <ul className="space-y-3 text-sm font-bold">
               <li><Link href="/" className="hover:text-primary-dark transition-colors">Home Discovery</Link></li>
               <li><Link href="/ongoing" className="hover:text-primary-dark transition-colors">Ongoing Series</Link></li>
@@ -40,7 +40,7 @@ export const Footer = () => {
 
           {/* Connect */}
           <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Neural Net</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Neural Net</h4>
             <p className="text-sm text-muted-foreground font-medium">
               Follow development updates or contribute to the core system.
             </p>
@@ -48,7 +48,7 @@ export const Footer = () => {
               href="https://github.com/david-aistudio" 
               target="_blank" 
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 text-xs font-black uppercase tracking-widest text-white bg-black px-6 py-3 rounded-full hover:bg-primary-dark hover:text-white transition-all shadow-lg"
+              className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-white bg-black px-6 py-3 rounded-full hover:bg-primary-dark hover:text-white transition-all shadow-lg"
               aria-label="Follow David on GitHub"
             >
               <Github className="w-4 h-4" aria-hidden="true" />
@@ -58,7 +58,7 @@ export const Footer = () => {
 
           {/* Disclaimer */}
           <div className="space-y-6">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground">Legal Protocol</h4>
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Legal Protocol</h4>
             <p className="text-[11px] text-muted-foreground leading-relaxed font-medium">
               PingHua does not store any files on its server. All contents are provided by non-affiliated third parties.
               This system is strictly for educational purposes.
@@ -69,7 +69,7 @@ export const Footer = () => {
         {/* Copyright */}
         <div className="border-t border-black/5 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
-            © {new Date().getFullYear()} PINGHUA_CORE. ALL_RIGHTS_RESERVED.
+            © {new Date().getFullYear()} PINGHUA. ALL RIGHTS RESERVED.
           </p>
           <p className="text-[10px] font-bold text-muted-foreground flex items-center gap-1.5 uppercase tracking-widest">
             ENGINEERED WITH <Heart className="w-3 h-3 text-red-500 fill-red-500" aria-hidden="true" /> BY DAVID

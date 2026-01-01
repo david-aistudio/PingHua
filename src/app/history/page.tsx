@@ -28,10 +28,10 @@ export default function HistoryPage() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
             <div className="space-y-2">
-                <div className="flex items-center gap-2 text-primary font-black text-xs uppercase tracking-[0.2em]">
+                <div className="flex items-center gap-2 text-primary font-bold text-xs uppercase tracking-widest">
                     <Clock className="w-4 h-4" /> Activity Logs
                 </div>
-                <h1 className="text-4xl md:text-5xl font-black tracking-tighter text-foreground uppercase italic">Riwayat Tontonan</h1>
+                <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground">Riwayat Tontonan</h1>
             </div>
             
             {items.length > 0 && (
@@ -67,7 +67,7 @@ export default function HistoryPage() {
                         className="group relative bg-white p-4 md:p-6 rounded-[2rem] border border-black/5 shadow-soft hover:shadow-apple transition-all duration-500 flex items-center gap-6 overflow-hidden"
                     >
                         {/* Number Index */}
-                        <div className="hidden md:flex text-4xl font-black text-secondary-foreground/5 italic group-hover:text-primary/10 transition-colors">
+                        <div className="hidden md:flex text-4xl font-bold text-secondary-foreground/5 group-hover:text-primary/10 transition-colors">
                             {(index + 1).toString().padStart(2, '0')}
                         </div>
 
@@ -81,11 +81,11 @@ export default function HistoryPage() {
 
                         {/* Info */}
                         <div className="flex-1 min-w-0">
-                            <h3 className="text-lg md:text-xl font-black text-foreground leading-tight line-clamp-1 group-hover:text-primary transition-colors uppercase italic tracking-tight">
+                            <h3 className="text-lg md:text-xl font-bold text-foreground leading-tight line-clamp-1 group-hover:text-primary transition-colors">
                                 {item.title}
                             </h3>
                             <div className="flex items-center gap-3 mt-2">
-                                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border border-primary/20">
+                                <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border border-primary/20">
                                     {item.episode}
                                 </span>
                                 <span className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider">
