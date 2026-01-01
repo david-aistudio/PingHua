@@ -11,10 +11,17 @@
   --color-popover: #FFFFFF;
   --color-popover-foreground: #1D1D1F;
   
-  --color-primary: #FFB800; /* Honey Amber */
-  --color-primary-foreground: #000000;
+    --color-primary: #FFB800; /* Honey Amber */
   
-  --color-secondary: #F2F2F7; /* Apple System Gray 6 */
+    --color-primary-foreground: #000000;
+  
+    --color-primary-dark: #B45309; /* Amber 700 for accessible icons/text */
+  
+    
+  
+    --color-secondary: #F2F2F7; 
+  
+   /* Apple System Gray 6 */
   --color-secondary-foreground: #1D1D1F;
   
   --color-muted: #F2F2F7;
